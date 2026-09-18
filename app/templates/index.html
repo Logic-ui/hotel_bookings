@@ -33,13 +33,18 @@
         </div>
         <div>
           <h1 class="brand-title">GrandHorizon Analytics</h1>
-          <p class="brand-subtitle">Hotel Booking Demand Intelligence, Batch Risk Audit & ML Optimization</p>
+          <p class="brand-subtitle">Hotel Demand Intelligence, Batch Risk Audit & Hospitality ML Suite</p>
         </div>
       </div>
-      <div class="nav-status">
-        <span class="status-indicator live"></span>
-        <span class="status-text">Production Engine Active</span>
-        <span class="badge badge-glow">v2.0 &bull; 119k Records</span>
+      <div class="flex-gap">
+        <a href="/api/executive-report" target="_blank" class="btn btn-secondary btn-sm btn-shimmer" style="color: #38bdf8;">
+          <i class="fa-solid fa-file-contract"></i> Executive Report
+        </a>
+        <div class="nav-status">
+          <span class="status-indicator live"></span>
+          <span class="status-text">Production v3.0</span>
+          <span class="badge badge-glow">119k Records</span>
+        </div>
       </div>
     </div>
     
@@ -51,11 +56,14 @@
       <button class="tab-btn" data-tab="tab-eda">
         <i class="fa-solid fa-chart-line"></i> Market & Seasonality
       </button>
+      <button class="tab-btn" data-tab="tab-geo">
+        <i class="fa-solid fa-earth-americas"></i> Geographic Risk
+      </button>
       <button class="tab-btn" data-tab="tab-ml">
         <i class="fa-solid fa-brain"></i> Model Benchmark
       </button>
       <button class="tab-btn highlight" data-tab="tab-predict">
-        <i class="fa-solid fa-bolt"></i> Live Risk Predictor
+        <i class="fa-solid fa-bolt"></i> Live Risk & Retention
       </button>
       <button class="tab-btn highlight" data-tab="tab-batch">
         <i class="fa-solid fa-file-csv"></i> Batch CSV Audit
@@ -155,6 +163,7 @@
         </div>
       </div>
 
+      <!-- Hotel Breakdown & Room Upgrade Matrix -->
       <div class="grid-2-col">
         <div class="glass-card card-interactive">
           <div class="card-header">
@@ -185,36 +194,28 @@
           </div>
         </div>
 
+        <!-- Room Upgrade Impact Matrix -->
         <div class="glass-card card-interactive">
           <div class="card-header">
-            <h3 class="card-title"><i class="fa-solid fa-lightbulb"></i> Strategic Hospitality Takeaways</h3>
+            <h3 class="card-title"><i class="fa-solid fa-bed"></i> Room Upgrade Retention Advantage</h3>
+            <span class="card-subtitle">Impact of assigning an upgraded room vs exact reserved room</span>
           </div>
-          <ul class="insights-list">
-            <li>
-              <div class="bullet-dot blue"></div>
-              <div>
-                <strong>City Hotels suffer ~14% higher cancellation rates</strong> than Resort properties due to transient business travelers and flexible online bookings.
-              </div>
-            </li>
-            <li>
-              <div class="bullet-dot amber"></div>
-              <div>
-                <strong>Lead Time is the strongest cancellation predictor:</strong> Reservations made over 180 days in advance have cancellation rates exceeding 55%.
-              </div>
-            </li>
-            <li>
-              <div class="bullet-dot purple"></div>
-              <div>
-                <strong>Special Requests signal guest loyalty:</strong> Customers requesting 2 or more special accommodations cancel 60% less frequently.
-              </div>
-            </li>
-            <li>
-              <div class="bullet-dot green"></div>
-              <div>
-                <strong>The "Deposit Paradox":</strong> Non-refundable deposits in this dataset were largely applied to high-risk group tour agency blocks, resulting in high recorded cancellations.
-              </div>
-            </li>
-          </ul>
+          <div class="upgrade-grid">
+            <div class="upgrade-box same-room">
+              <span class="u-title">Same Room Assigned</span>
+              <div class="u-val text-danger">41.6%</div>
+              <span class="u-sub">Cancellation Rate (104k bookings)</span>
+            </div>
+            <div class="upgrade-box upgraded-room">
+              <span class="u-title">Room Upgrade Assigned</span>
+              <div class="u-val text-success">5.3%</div>
+              <span class="u-sub">Cancellation Rate (14.6k bookings)</span>
+            </div>
+          </div>
+          <div class="upgrade-banner mt-4">
+            <i class="fa-solid fa-circle-check text-success"></i>
+            <span><strong>36.3% Absolute Reduction in Churn:</strong> Upgraded guests cancel ~87% less frequently due to high perceived value. Discretionary upgrades are a proven revenue protection lever.</span>
+          </div>
         </div>
       </div>
     </section>
@@ -274,7 +275,92 @@
       </div>
     </section>
 
-    <!-- TAB 3: MACHINE LEARNING BENCHMARK -->
+    <!-- TAB 3: GEOGRAPHIC INTELLIGENCE (NEW FEATURE) -->
+    <section id="tab-geo" class="tab-pane">
+      <div class="grid-2-col mb-4">
+        <!-- Domestic Card -->
+        <div class="glass-card card-interactive">
+          <div class="card-header flex-between">
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-flag"></i> Domestic Guests (Portugal)</h3>
+              <span class="card-subtitle">Local transient and leisure travelers</span>
+            </div>
+            <span class="badge badge-warning">High Risk Segment</span>
+          </div>
+          <div class="kpi-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+            <div class="kpi-card" style="padding: 1rem;">
+              <span class="kpi-label">Bookings Share</span>
+              <div class="kpi-value count-up" id="geo-dom-pct">40.7%</div>
+              <div class="kpi-subtext" id="geo-dom-count">48,483 Bookings</div>
+            </div>
+            <div class="kpi-card" style="padding: 1rem;">
+              <span class="kpi-label">Cancellation Rate</span>
+              <div class="kpi-value text-danger count-up" id="geo-dom-cancel">56.7%</div>
+              <div class="kpi-subtext text-danger">Local bookings easily reschedule</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- International Card -->
+        <div class="glass-card card-interactive">
+          <div class="card-header flex-between">
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-plane-departure"></i> International Guests</h3>
+              <span class="card-subtitle">Foreign travelers (UK, France, Spain, Germany, etc.)</span>
+            </div>
+            <span class="badge badge-success">High Commitment</span>
+          </div>
+          <div class="kpi-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+            <div class="kpi-card" style="padding: 1rem;">
+              <span class="kpi-label">Bookings Share</span>
+              <div class="kpi-value count-up" id="geo-intl-pct">59.3%</div>
+              <div class="kpi-subtext" id="geo-intl-count">70,725 Bookings</div>
+            </div>
+            <div class="kpi-card" style="padding: 1rem;">
+              <span class="kpi-label">Cancellation Rate</span>
+              <div class="kpi-value text-success count-up" id="geo-intl-cancel">23.6%</div>
+              <div class="kpi-subtext text-success">Flight & travel commitments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Country Table -->
+      <div class="glass-card card-interactive">
+        <div class="card-header flex-between">
+          <div>
+            <h3 class="card-title"><i class="fa-solid fa-globe"></i> Top Origin Countries Risk & Pricing Matrix</h3>
+            <span class="card-subtitle">Volume, cancellation rates, and average room rate by guest country</span>
+          </div>
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="geo-search-input" placeholder="Search countries (e.g. France, Germany, USA)..." class="search-input">
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <table class="benchmark-table" id="geo-table">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>Code</th>
+                <th>Volume</th>
+                <th>Portfolio Share</th>
+                <th>Average ADR</th>
+                <th>Average Lead Time</th>
+                <th>Cancellation Rate</th>
+                <th>Risk Classification</th>
+              </tr>
+            </thead>
+            <tbody id="geo-tbody">
+              <tr><td colspan="8" class="text-center py-4">Loading geographic intelligence...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: MACHINE LEARNING BENCHMARK -->
     <section id="tab-ml" class="tab-pane">
       <div class="glass-card card-interactive">
         <div class="card-header">
@@ -345,14 +431,14 @@
       </div>
     </section>
 
-    <!-- TAB 4: LIVE PREDICTOR & WHAT-IF SIMULATOR -->
+    <!-- TAB 5: LIVE PREDICTOR & RETENTION PLAYBOOK -->
     <section id="tab-predict" class="tab-pane">
       <div class="grid-2-col">
         <!-- Form -->
         <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Reservation Parameters</h3>
-            <span class="card-subtitle">Enter booking details to simulate cancellation risk & pricing guidance</span>
+            <span class="card-subtitle">Enter booking details to simulate cancellation risk, pricing & retention playbook</span>
           </div>
 
           <form id="prediction-form" class="predict-form">
@@ -474,7 +560,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary btn-block btn-shimmer">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Cancellation Risk
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Cancellation Risk & Retention
             </button>
           </form>
         </div>
@@ -483,11 +569,10 @@
         <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-gauge-high"></i> Risk Diagnostic & Revenue Intelligence</h3>
-            <span class="card-subtitle">Real-time ML Model Evaluation & Pricing Guidance</span>
+            <span class="card-subtitle">Real-time ML Model Evaluation, Pricing & Retention Playbook</span>
           </div>
 
           <div class="prediction-output-box" id="pred-box">
-            <!-- Modern Animated SVG Gauge -->
             <div class="gauge-wrapper">
               <div class="gauge-svg-container" id="gauge-container">
                 <svg class="gauge-svg" viewBox="0 0 160 160">
@@ -521,17 +606,33 @@
               <p class="pricing-guidance" id="price-guidance">High demand window: enforce minimum stays.</p>
             </div>
 
+            <!-- Automated Retention Playbook Box (NEW) -->
+            <div class="playbook-box" id="playbook-box" style="display: none;">
+              <div class="playbook-header">
+                <span class="playbook-title"><i class="fa-solid fa-shield-cat"></i> Automated Guest Retention Playbook</span>
+                <span class="badge badge-success" id="playbook-roi-badge">ROI: 8.5x</span>
+              </div>
+              
+              <div class="incentive-card">
+                <div class="incentive-icon"><i class="fa-solid fa-gift"></i></div>
+                <div>
+                  <strong id="incentive-title">Complimentary Room Upgrade Voucher</strong>
+                  <p id="incentive-desc">Assign room upgrade at check-in to dramatically reduce cancellation probability.</p>
+                  <div class="incentive-roi">
+                    <span>Est. Cost: <strong id="incentive-cost">$15.00</strong></span> &bull; 
+                    <span>Expected Net Preserved Revenue: <strong class="text-success" id="incentive-saved">+$128.50</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-list" id="playbook-timeline">
+              </div>
+            </div>
+
             <div class="result-section">
               <h4 class="result-heading"><i class="fa-solid fa-chart-column"></i> Primary Risk Drivers</h4>
               <ul class="drivers-list" id="drivers-list">
                 <li>Configure parameters and click "Predict Cancellation Risk" to inspect factors.</li>
-              </ul>
-            </div>
-
-            <div class="result-section">
-              <h4 class="result-heading"><i class="fa-solid fa-shield-heart"></i> Hospitality Action Plan</h4>
-              <ul class="recommendations-list" id="rec-list">
-                <li>Automated retention actions and overbooking policies will be generated here.</li>
               </ul>
             </div>
           </div>
@@ -539,7 +640,7 @@
       </div>
     </section>
 
-    <!-- TAB 5: BATCH CSV AUDIT & REVENUE-AT-RISK -->
+    <!-- TAB 6: BATCH CSV AUDIT & REVENUE-AT-RISK -->
     <section id="tab-batch" class="tab-pane">
       <div class="glass-card mb-4 card-interactive">
         <div class="card-header flex-between">
@@ -557,7 +658,6 @@
           </div>
         </div>
 
-        <!-- Upload Dropzone -->
         <div class="dropzone" id="csv-dropzone">
           <div class="dropzone-inner">
             <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
@@ -568,9 +668,7 @@
         </div>
       </div>
 
-      <!-- Batch Results Section (Hidden until processed) -->
       <div id="batch-results-area" style="display: none;">
-        <!-- Batch KPI Cards -->
         <div class="kpi-grid">
           <div class="kpi-card" data-tilt>
             <div class="kpi-header">
@@ -609,7 +707,6 @@
           </div>
         </div>
 
-        <!-- Table of Enriched Bookings -->
         <div class="glass-card card-interactive">
           <div class="card-header flex-between">
             <div>
@@ -650,10 +747,9 @@
       </div>
     </section>
 
-    <!-- TAB 6: OVERBOOKING OPTIMIZATION SIMULATOR -->
+    <!-- TAB 7: OVERBOOKING OPTIMIZATION SIMULATOR -->
     <section id="tab-simulator" class="tab-pane">
       <div class="grid-2-col">
-        <!-- Simulator Controls -->
         <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Property & Overbooking Parameters</h3>
@@ -699,7 +795,6 @@
           </form>
         </div>
 
-        <!-- Simulator Output & Curve -->
         <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-award"></i> Optimal Overbooking Strategy</h3>
@@ -724,7 +819,7 @@
       </div>
     </section>
 
-    <!-- TAB 7: PUBLICATION FIGURES GALLERY -->
+    <!-- TAB 8: PUBLICATION FIGURES GALLERY -->
     <section id="tab-gallery" class="tab-pane">
       <div class="glass-card card-interactive">
         <div class="card-header">

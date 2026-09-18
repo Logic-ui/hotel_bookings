@@ -1213,6 +1213,164 @@ body {
   border-top: 1px solid var(--card-border);
 }
 
+/* ROOM UPGRADE MATRIX */
+.upgrade-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.upgrade-box {
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  border: 1px solid var(--card-border);
+}
+
+.upgrade-box.same-room {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.upgrade-box.upgraded-room {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.u-title {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  display: block;
+}
+
+.u-val {
+  font-size: 1.9rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  margin: 0.25rem 0;
+}
+
+.u-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.upgrade-banner {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.84rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  color: #a7f3d0;
+}
+
+/* RETENTION PLAYBOOK BOX */
+.playbook-box {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 14px;
+  padding: 1.2rem;
+  margin: 0.5rem 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.playbook-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.playbook-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.incentive-card {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+
+.incentive-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.incentive-card strong {
+  font-size: 0.92rem;
+  color: #f8fafc;
+  display: block;
+}
+
+.incentive-card p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0.2rem 0;
+}
+
+.incentive-roi {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.timeline-step {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.82rem;
+}
+
+.step-timing {
+  font-weight: 700;
+  color: #38bdf8;
+  white-space: nowrap;
+  min-width: 95px;
+}
+
+.step-action {
+  color: var(--text-secondary);
+}
+
+.step-action strong {
+  color: var(--text-primary);
+  display: block;
+  font-size: 0.84rem;
+}
+
 /* FOOTER */
 .footer {
   text-align: center;

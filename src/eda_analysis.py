@@ -108,6 +108,28 @@ def compute_summary_dict(df: pd.DataFrame) -> dict:
         rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2))
     ).head(6).to_dict(orient='index')
 
+    # Room allocation mismatch analysis
+    data_room = df.copy()
+    data_room['room_upgraded'] = (data_room['reserved_room_type'] != data_room['assigned_room_type']).astype(int)
+    exact_match = data_room[data_room['room_upgraded'] == 0]
+    upgraded = data_room[data_room['room_upgraded'] == 1]
+
+    room_allocation = {
+        'same_room': {
+            'total': int(len(exact_match)),
+            'pct_share': round(float(len(exact_match) / total_bookings * 100), 1),
+            'cancellation_rate': round(float(exact_match['is_canceled'].mean() * 100), 2) if len(exact_match) > 0 else 0,
+            'avg_adr': round(float(exact_match['adr'].mean()), 2) if len(exact_match) > 0 else 0
+        },
+        'upgraded_room': {
+            'total': int(len(upgraded)),
+            'pct_share': round(float(len(upgraded) / total_bookings * 100), 1),
+            'cancellation_rate': round(float(upgraded['is_canceled'].mean() * 100), 2) if len(upgraded) > 0 else 0,
+            'avg_adr': round(float(upgraded['adr'].mean()), 2) if len(upgraded) > 0 else 0
+        },
+        'upgrade_retention_advantage': round(float((exact_match['is_canceled'].mean() - upgraded['is_canceled'].mean()) * 100), 1) if len(exact_match) > 0 and len(upgraded) > 0 else 0
+    }
+
     return {
         'executive_kpis': {
             'total_bookings': total_bookings,
@@ -124,7 +146,8 @@ def compute_summary_dict(df: pd.DataFrame) -> dict:
         'market_segments': market_stats,
         'deposit_types': deposit_stats,
         'top_countries': top_countries,
-        'special_requests': {str(k): v for k, v in special_req_stats.items()}
+        'special_requests': {str(k): v for k, v in special_req_stats.items()},
+        'room_allocation_matrix': room_allocation
     }
 
 

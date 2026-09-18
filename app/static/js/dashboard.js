@@ -14,12 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initBatchAudit();
   initOverbookingSimulator();
   initPredictionForm();
+  initGeoSearch();
   
   fetchSummaryData();
   fetchModelBenchmark();
+  fetchGeoAnalytics();
   runOverbookingSimulation(); // Initial calculation
   
-  showToast("Welcome to GrandHorizon Analytics v2.0", "info", "fa-hotel");
+  showToast("Welcome to GrandHorizon Analytics v3.0", "info", "fa-hotel");
 });
 
 // TOAST NOTIFICATION SYSTEM
@@ -630,6 +632,36 @@ function displayPredictionResult(result) {
     sBadge.textContent = pr.season_category;
     sBadge.className = `badge badge-${pr.season_badge}`;
   }
+
+  // Retention Playbook (NEW in v3.0)
+  const pbBox = document.getElementById('playbook-box');
+  if (pbBox && result.retention_playbook) {
+    pbBox.style.display = 'block';
+    const pb = result.retention_playbook;
+
+    document.getElementById('playbook-roi-badge').textContent = `ROI: ${pb.financial_roi.roi_multiple}`;
+    document.getElementById('incentive-title').textContent = pb.incentive.title;
+    document.getElementById('incentive-desc').textContent = pb.incentive.description;
+    document.getElementById('incentive-cost').textContent = `$${pb.incentive.cost.toFixed(2)}`;
+    document.getElementById('incentive-saved').textContent = `+$${pb.financial_roi.net_preserved_revenue.toFixed(2)}`;
+
+    const tList = document.getElementById('playbook-timeline');
+    if (tList) {
+      tList.innerHTML = '';
+      pb.timeline.forEach(step => {
+        const div = document.createElement('div');
+        div.className = 'timeline-step';
+        div.innerHTML = `
+          <span class="step-timing"><i class="fa-solid fa-clock"></i> ${step.timing}</span>
+          <div class="step-action">
+            <strong>${step.objective}</strong>
+            <p>${step.action}</p>
+          </div>
+        `;
+        tList.appendChild(div);
+      });
+    }
+  }
 }
 
 // 7. BATCH CSV AUDIT
@@ -939,3 +971,74 @@ function renderSimulationChart(curve) {
     }
   });
 }
+
+// 9. GEOGRAPHIC INTELLIGENCE (NEW in v3.0)
+let cachedGeoCountries = [];
+
+async function fetchGeoAnalytics() {
+  try {
+    const res = await fetch('/api/geo-analytics');
+    if (!res.ok) throw new Error('Failed to fetch geographic analytics');
+    const data = await res.json();
+
+    // Domestic vs International KPIs
+    const dom = data.domestic_vs_international.domestic;
+    const intl = data.domestic_vs_international.international;
+
+    animateCountUp(document.getElementById('geo-dom-pct'), dom.pct_of_total, '', '%', 1);
+    document.getElementById('geo-dom-count').textContent = `${dom.total_bookings.toLocaleString()} Bookings`;
+    animateCountUp(document.getElementById('geo-dom-cancel'), dom.cancellation_rate, '', '%', 1);
+
+    animateCountUp(document.getElementById('geo-intl-pct'), intl.pct_of_total, '', '%', 1);
+    document.getElementById('geo-intl-count').textContent = `${intl.total_bookings.toLocaleString()} Bookings`;
+    animateCountUp(document.getElementById('geo-intl-cancel'), intl.cancellation_rate, '', '%', 1);
+
+    cachedGeoCountries = data.top_origin_countries || [];
+    renderGeoTableRows(cachedGeoCountries);
+
+  } catch (err) {
+    console.warn("Geo analytics notice:", err.message);
+  }
+}
+
+function renderGeoTableRows(countries) {
+  const tbody = document.getElementById('geo-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  countries.forEach(c => {
+    const tr = document.createElement('tr');
+    const badgeClass = c.risk_tier === 'High Risk' ? 'badge-danger' : (c.risk_tier === 'Moderate Risk' ? 'badge-warning' : 'badge-success');
+    tr.innerHTML = `
+      <td><strong>${c.country_name}</strong></td>
+      <td><span class="badge badge-secondary" style="font-family: var(--font-mono);">${c.country_code}</span></td>
+      <td>${c.bookings.toLocaleString()}</td>
+      <td>${c.pct_share}%</td>
+      <td>$${c.avg_adr.toFixed(2)}</td>
+      <td>${c.avg_lead_time.toFixed(1)}d</td>
+      <td><strong style="color: ${c.risk_color};">${c.cancellation_rate}%</strong></td>
+      <td><span class="badge ${badgeClass}">${c.risk_tier}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function initGeoSearch() {
+  const searchInput = document.getElementById('geo-search-input');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    if (!q) {
+      renderGeoTableRows(cachedGeoCountries);
+      return;
+    }
+    const filtered = cachedGeoCountries.filter(c => 
+      c.country_name.toLowerCase().includes(q) ||
+      c.country_code.toLowerCase().includes(q) ||
+      c.risk_tier.toLowerCase().includes(q)
+    );
+    renderGeoTableRows(filtered);
+  });
+}
+
