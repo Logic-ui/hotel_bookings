@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GrandHorizon | Hotel Bookings Analytics, Batch Audit & ML Prediction</title>
-  <!-- Modern Google Fonts -->
+  <title>GrandHorizon | Hotel Bookings Analytics, Batch Audit & ML Suite</title>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Chart.js -->
@@ -16,6 +16,14 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+  <!-- Ambient Aurora Glow Orbs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
   <!-- Top Navigation Bar -->
   <header class="navbar">
     <div class="nav-container">
@@ -31,7 +39,7 @@
       <div class="nav-status">
         <span class="status-indicator live"></span>
         <span class="status-text">Production Engine Active</span>
-        <span class="badge badge-primary">v2.0 &bull; 119k Records</span>
+        <span class="badge badge-glow">v2.0 &bull; 119k Records</span>
       </div>
     </div>
     
@@ -64,7 +72,7 @@
   <!-- Global Filter / Slicer Toolbar -->
   <div class="filter-toolbar">
     <div class="filter-container">
-      <div class="filter-label"><i class="fa-solid fa-filter"></i> Dynamic Slicers:</div>
+      <div class="filter-label"><i class="fa-solid fa-sliders"></i> Dynamic Slicers:</div>
       <div class="filter-group">
         <label for="filter-hotel">Property:</label>
         <select id="filter-hotel" class="filter-select">
@@ -110,45 +118,45 @@
     <!-- TAB 1: EXECUTIVE OVERVIEW -->
     <section id="tab-overview" class="tab-pane active">
       <div class="kpi-grid">
-        <div class="kpi-card">
+        <div class="kpi-card" data-tilt>
           <div class="kpi-header">
             <span class="kpi-label">Filtered Bookings</span>
             <div class="kpi-icon blue"><i class="fa-solid fa-calendar-check"></i></div>
           </div>
-          <div class="kpi-value" id="kpi-total">119,208</div>
+          <div class="kpi-value count-up" id="kpi-total">119,208</div>
           <div class="kpi-subtext"><span class="badge badge-info" id="kpi-scope">Active Scope</span> 2015 – 2017</div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" data-tilt>
           <div class="kpi-header">
             <span class="kpi-label">Cancellation Rate</span>
             <div class="kpi-icon red"><i class="fa-solid fa-ban"></i></div>
           </div>
-          <div class="kpi-value" id="kpi-cancel-rate">37.08%</div>
+          <div class="kpi-value count-up" id="kpi-cancel-rate">37.08%</div>
           <div class="kpi-subtext text-danger" id="kpi-cancel-count"><i class="fa-solid fa-triangle-exclamation"></i> 44,224 Canceled</div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" data-tilt>
           <div class="kpi-header">
             <span class="kpi-label">Average Daily Rate (ADR)</span>
             <div class="kpi-icon green"><i class="fa-solid fa-dollar-sign"></i></div>
           </div>
-          <div class="kpi-value" id="kpi-adr">$101.93</div>
+          <div class="kpi-value count-up" id="kpi-adr">$101.93</div>
           <div class="kpi-subtext text-success"><i class="fa-solid fa-arrow-trend-up"></i> Peak summer rate ~$125/night</div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" data-tilt>
           <div class="kpi-header">
             <span class="kpi-label">Average Lead Time</span>
             <div class="kpi-icon purple"><i class="fa-solid fa-clock-rotate-left"></i></div>
           </div>
-          <div class="kpi-value" id="kpi-lead-time">104.1 Days</div>
-          <div class="kpi-subtext text-warning"><i class="fa-solid fa-hourglass-half"></i> Long horizons elevate cancellation</div>
+          <div class="kpi-value count-up" id="kpi-lead-time">104.1 Days</div>
+          <div class="kpi-subtext text-warning"><i class="fa-solid fa-hourglass-half"></i> Long horizons elevate risk</div>
         </div>
       </div>
 
       <div class="grid-2-col">
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-building"></i> Hotel Type Performance Comparison</h3>
           </div>
@@ -177,7 +185,7 @@
           </div>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-lightbulb"></i> Strategic Hospitality Takeaways</h3>
           </div>
@@ -214,7 +222,7 @@
     <!-- TAB 2: EXPLORATORY DATA ANALYSIS -->
     <section id="tab-eda" class="tab-pane">
       <div class="charts-grid">
-        <div class="glass-card col-span-2">
+        <div class="glass-card col-span-2 card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-calendar-days"></i> Monthly Booking Demand & Cancellation Seasonality</h3>
             <span class="card-subtitle">Volume peak in August / Summer vs Winter low season</span>
@@ -224,7 +232,7 @@
           </div>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-hourglass-start"></i> Cancellation Rate by Lead Time Horizon</h3>
             <span class="card-subtitle">Probability spikes as booking horizon expands</span>
@@ -234,7 +242,7 @@
           </div>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-users-viewfinder"></i> Market Segment Cancellation Rates</h3>
             <span class="card-subtitle">Online TA vs Direct vs Corporate vs Groups</span>
@@ -244,7 +252,7 @@
           </div>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> Deposit Type Impact</h3>
             <span class="card-subtitle">No Deposit vs Non Refund vs Refundable</span>
@@ -254,7 +262,7 @@
           </div>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-bell-concierge"></i> Guest Engagement & Special Requests</h3>
             <span class="card-subtitle">More requests = lower cancellation risk</span>
@@ -268,7 +276,7 @@
 
     <!-- TAB 3: MACHINE LEARNING BENCHMARK -->
     <section id="tab-ml" class="tab-pane">
-      <div class="glass-card">
+      <div class="glass-card card-interactive">
         <div class="card-header">
           <h3 class="card-title"><i class="fa-solid fa-robot"></i> Multi-Classifier Model Benchmark Results</h3>
           <span class="card-subtitle">Trained with strict zero data-leakage safeguards (reservation status excluded)</span>
@@ -296,7 +304,7 @@
       </div>
 
       <div class="grid-2-col mt-4">
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-ranking-star"></i> Top Predictive Feature Importances</h3>
             <span class="card-subtitle">Features driving cancellation risk predictions</span>
@@ -306,7 +314,7 @@
           </div>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-shield-halved"></i> Data Integrity & Production Readiness</h3>
           </div>
@@ -341,7 +349,7 @@
     <section id="tab-predict" class="tab-pane">
       <div class="grid-2-col">
         <!-- Form -->
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Reservation Parameters</h3>
             <span class="card-subtitle">Enter booking details to simulate cancellation risk & pricing guidance</span>
@@ -465,24 +473,31 @@
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">
+            <button type="submit" class="btn btn-primary btn-block btn-shimmer">
               <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Cancellation Risk
             </button>
           </form>
         </div>
 
         <!-- Result -->
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-gauge-high"></i> Risk Diagnostic & Revenue Intelligence</h3>
             <span class="card-subtitle">Real-time ML Model Evaluation & Pricing Guidance</span>
           </div>
 
           <div class="prediction-output-box" id="pred-box">
+            <!-- Modern Animated SVG Gauge -->
             <div class="gauge-wrapper">
-              <div class="gauge-circle" id="gauge-circle">
-                <span class="gauge-value" id="gauge-percent">--%</span>
-                <span class="gauge-label">Cancellation Probability</span>
+              <div class="gauge-svg-container" id="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 160 160">
+                  <circle class="gauge-track" cx="80" cy="80" r="68"></circle>
+                  <circle class="gauge-fill" id="gauge-svg-fill" cx="80" cy="80" r="68"></circle>
+                </svg>
+                <div class="gauge-inner">
+                  <span class="gauge-value" id="gauge-percent">--%</span>
+                  <span class="gauge-label">Cancellation Risk</span>
+                </div>
               </div>
               <div class="risk-badge-large" id="risk-badge">Awaiting Simulation</div>
             </div>
@@ -524,16 +539,16 @@
       </div>
     </section>
 
-    <!-- TAB 5: BATCH CSV AUDIT & REVENUE-AT-RISK (NEW FEATURE) -->
+    <!-- TAB 5: BATCH CSV AUDIT & REVENUE-AT-RISK -->
     <section id="tab-batch" class="tab-pane">
-      <div class="glass-card mb-4">
+      <div class="glass-card mb-4 card-interactive">
         <div class="card-header flex-between">
           <div>
             <h3 class="card-title"><i class="fa-solid fa-file-csv"></i> Batch Reservation Audit & Revenue at Risk</h3>
             <span class="card-subtitle">Upload any CSV of upcoming bookings for bulk risk scoring, revenue loss analysis, and overbooking advice</span>
           </div>
           <div class="flex-gap">
-            <button id="btn-load-sample" class="btn btn-secondary">
+            <button id="btn-load-sample" class="btn btn-secondary btn-shimmer">
               <i class="fa-solid fa-flask"></i> Load Demo Sample (50 Bookings)
             </button>
             <a href="/api/sample-batch-csv" class="btn btn-secondary" download>
@@ -544,10 +559,12 @@
 
         <!-- Upload Dropzone -->
         <div class="dropzone" id="csv-dropzone">
-          <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
-          <p class="dropzone-text">Drag & drop your reservations CSV file here, or <span class="dropzone-link">browse file</span></p>
-          <input type="file" id="batch-file-input" accept=".csv" style="display: none;">
-          <p class="dropzone-hint">Compatible with standard hotel bookings schema (lead_time, hotel, adr, deposit_type, etc.)</p>
+          <div class="dropzone-inner">
+            <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+            <p class="dropzone-text">Drag & drop your reservations CSV file here, or <span class="dropzone-link">browse file</span></p>
+            <input type="file" id="batch-file-input" accept=".csv" style="display: none;">
+            <p class="dropzone-hint">Compatible with standard hotel bookings schema (lead_time, hotel, adr, deposit_type, etc.)</p>
+          </div>
         </div>
       </div>
 
@@ -555,34 +572,34 @@
       <div id="batch-results-area" style="display: none;">
         <!-- Batch KPI Cards -->
         <div class="kpi-grid">
-          <div class="kpi-card">
+          <div class="kpi-card" data-tilt>
             <div class="kpi-header">
               <span class="kpi-label">Audited Reservations</span>
               <div class="kpi-icon blue"><i class="fa-solid fa-list-check"></i></div>
             </div>
-            <div class="kpi-value" id="batch-kpi-total">--</div>
+            <div class="kpi-value count-up" id="batch-kpi-total">--</div>
             <div class="kpi-subtext" id="batch-kpi-revenue">Pipeline: $0</div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" data-tilt>
             <div class="kpi-header">
               <span class="kpi-label">Expected Cancellations</span>
               <div class="kpi-icon red"><i class="fa-solid fa-ban"></i></div>
             </div>
-            <div class="kpi-value" id="batch-kpi-cancels">--</div>
+            <div class="kpi-value count-up" id="batch-kpi-cancels">--</div>
             <div class="kpi-subtext text-danger" id="batch-kpi-rate">Rate: --%</div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" data-tilt>
             <div class="kpi-header">
               <span class="kpi-label">Total Revenue at Risk</span>
               <div class="kpi-icon amber"><i class="fa-solid fa-sack-dollar"></i></div>
             </div>
-            <div class="kpi-value text-danger" id="batch-kpi-risk">$0</div>
+            <div class="kpi-value text-danger count-up" id="batch-kpi-risk">$0</div>
             <div class="kpi-subtext text-danger" id="batch-kpi-risk-pct">--% of pipeline at risk</div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card" data-tilt>
             <div class="kpi-header">
               <span class="kpi-label">Recommended Overbook Buffer</span>
               <div class="kpi-icon green"><i class="fa-solid fa-shield-cat"></i></div>
@@ -593,15 +610,24 @@
         </div>
 
         <!-- Table of Enriched Bookings -->
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header flex-between">
-            <h3 class="card-title"><i class="fa-solid fa-table-list"></i> Enriched Reservations with Risk Scores</h3>
-            <button id="btn-export-enriched-csv" class="btn btn-primary btn-sm">
-              <i class="fa-solid fa-file-export"></i> Export Enriched CSV
-            </button>
+            <div>
+              <h3 class="card-title"><i class="fa-solid fa-table-list"></i> Enriched Reservations with Risk Scores</h3>
+              <span class="card-subtitle" id="table-record-count">Showing results</span>
+            </div>
+            <div class="flex-gap">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="batch-search-input" placeholder="Search rows (e.g. Resort, High Risk, July)..." class="search-input">
+              </div>
+              <button id="btn-export-enriched-csv" class="btn btn-primary btn-sm btn-shimmer">
+                <i class="fa-solid fa-file-export"></i> Export Enriched CSV
+              </button>
+            </div>
           </div>
 
-          <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <div class="table-responsive" style="max-height: 440px; overflow-y: auto;">
             <table class="benchmark-table" id="batch-table">
               <thead>
                 <tr>
@@ -624,11 +650,11 @@
       </div>
     </section>
 
-    <!-- TAB 6: OVERBOOKING OPTIMIZATION SIMULATOR (NEW FEATURE) -->
+    <!-- TAB 6: OVERBOOKING OPTIMIZATION SIMULATOR -->
     <section id="tab-simulator" class="tab-pane">
       <div class="grid-2-col">
         <!-- Simulator Controls -->
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Property & Overbooking Parameters</h3>
             <span class="card-subtitle">Tune hotel capacity, ADR, and walk costs to find the revenue-maximizing buffer</span>
@@ -667,14 +693,14 @@
               <input type="range" id="sim-walk-cost" min="50" max="600" step="10" value="180" class="form-range">
             </div>
 
-            <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block">
+            <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block btn-shimmer">
               <i class="fa-solid fa-chart-line"></i> Calculate Revenue Optimization Curve
             </button>
           </form>
         </div>
 
         <!-- Simulator Output & Curve -->
-        <div class="glass-card">
+        <div class="glass-card card-interactive">
           <div class="card-header">
             <h3 class="card-title"><i class="fa-solid fa-award"></i> Optimal Overbooking Strategy</h3>
             <span class="card-subtitle">Revenue-maximizing buffer balancing empty rooms vs walked guests</span>
@@ -700,7 +726,7 @@
 
     <!-- TAB 7: PUBLICATION FIGURES GALLERY -->
     <section id="tab-gallery" class="tab-pane">
-      <div class="glass-card">
+      <div class="glass-card card-interactive">
         <div class="card-header">
           <h3 class="card-title"><i class="fa-solid fa-image"></i> High-Resolution Publication Visualizations</h3>
           <span class="card-subtitle">Exported directly from Python matplotlib/seaborn analytics pipeline</span>

@@ -1,6 +1,7 @@
 /**
  * GrandHorizon Hotel Analytics, Batch Audit & ML Suite
  * Frontend Interactive Dashboard Controller (v2.0)
+ * Features: Count-Up Animations, SVG Gauge, Toast System, Live Table Search
  */
 
 let charts = {};
@@ -17,7 +18,54 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchSummaryData();
   fetchModelBenchmark();
   runOverbookingSimulation(); // Initial calculation
+  
+  showToast("Welcome to GrandHorizon Analytics v2.0", "info", "fa-hotel");
 });
+
+// TOAST NOTIFICATION SYSTEM
+function showToast(message, type = 'info', icon = 'fa-circle-info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 4000);
+}
+
+// NUMBER COUNT-UP ANIMATION
+function animateCountUp(element, endVal, prefix = '', suffix = '', decimals = 0, duration = 1000) {
+  if (!element) return;
+  const startVal = 0;
+  const startTime = performance.now();
+
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const currentVal = startVal + (endVal - startVal) * easeOut;
+
+    let formattedVal;
+    if (decimals > 0) {
+      formattedVal = currentVal.toFixed(decimals);
+    } else {
+      formattedVal = Math.round(currentVal).toLocaleString();
+    }
+
+    element.textContent = `${prefix}${formattedVal}${suffix}`;
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+
+  requestAnimationFrame(update);
+}
 
 // 1. TAB SWITCHING
 function initTabs() {
@@ -75,7 +123,7 @@ function initFilters() {
   const btnReset = document.getElementById('btn-reset-filters');
 
   const onFilterChange = () => {
-    fetchSummaryData();
+    fetchSummaryData(true);
   };
 
   if (fHotel) fHotel.addEventListener('change', onFilterChange);
@@ -87,13 +135,14 @@ function initFilters() {
       if (fHotel) fHotel.value = 'All';
       if (fYear) fYear.value = 'All';
       if (fMarket) fMarket.value = 'All';
-      fetchSummaryData();
+      fetchSummaryData(true);
+      showToast("Filters reset to default view", "info", "fa-rotate-left");
     });
   }
 }
 
 // 4. FETCH SUMMARY DATA & RENDER CHARTS
-async function fetchSummaryData() {
+async function fetchSummaryData(isUserFilter = false) {
   const fHotel = document.getElementById('filter-hotel')?.value || 'All';
   const fYear = document.getElementById('filter-year')?.value || 'All';
   const fMarket = document.getElementById('filter-market')?.value || 'All';
@@ -111,19 +160,20 @@ async function fetchSummaryData() {
     if (!res.ok) throw new Error('Failed to fetch summary');
     const data = await res.json();
 
-    // 1. Executive KPIs
+    // Update KPIs with count-up animation
     const kpis = data.executive_kpis;
     if (kpis) {
-      document.getElementById('kpi-total').textContent = kpis.total_bookings.toLocaleString();
-      document.getElementById('kpi-cancel-rate').textContent = `${kpis.cancellation_rate}%`;
-      document.getElementById('kpi-adr').textContent = `$${kpis.avg_adr.toFixed(2)}`;
-      document.getElementById('kpi-lead-time').textContent = `${kpis.avg_lead_time.toFixed(1)} Days`;
+      animateCountUp(document.getElementById('kpi-total'), kpis.total_bookings);
+      animateCountUp(document.getElementById('kpi-cancel-rate'), kpis.cancellation_rate, '', '%', 2);
+      animateCountUp(document.getElementById('kpi-adr'), kpis.avg_adr, '$', '', 2);
+      animateCountUp(document.getElementById('kpi-lead-time'), kpis.avg_lead_time, '', ' Days', 1);
+
       if (kpis.canceled_bookings !== undefined) {
         document.getElementById('kpi-cancel-count').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${kpis.canceled_bookings.toLocaleString()} Canceled`;
       }
     }
 
-    // 2. Hotel Breakdown
+    // Update Hotel Breakdown
     const hotels = data.hotel_breakdown;
     if (hotels) {
       if (hotels['City Hotel']) {
@@ -140,12 +190,16 @@ async function fetchSummaryData() {
       }
     }
 
-    // 3. Render / Update Charts
+    // Render Charts
     renderMonthlyChart(data.monthly_trends);
     renderLeadTimeChart(data.lead_time_breakdown);
     renderMarketSegmentChart(data.market_segments);
     renderDepositTypeChart(data.deposit_types);
     renderSpecialRequestsChart(data.special_requests);
+
+    if (isUserFilter) {
+      showToast(`Filters applied: ${kpis.total_bookings.toLocaleString()} bookings found`, "success", "fa-filter");
+    }
 
   } catch (err) {
     console.warn("Summary fetch error:", err.message);
@@ -182,7 +236,7 @@ function renderMonthlyChart(trends) {
           backgroundColor: 'rgba(56, 189, 248, 0.45)',
           borderColor: '#38bdf8',
           borderWidth: 1.5,
-          borderRadius: 6,
+          borderRadius: 8,
           yAxisID: 'y'
         },
         {
@@ -190,10 +244,13 @@ function renderMonthlyChart(trends) {
           data: rates,
           type: 'line',
           borderColor: '#f43f5e',
-          backgroundColor: '#f43f5e',
+          backgroundColor: 'rgba(244, 63, 94, 0.1)',
+          fill: true,
           borderWidth: 3,
           pointRadius: 4,
-          pointHoverRadius: 6,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#f43f5e',
+          tension: 0.35,
           yAxisID: 'y1'
         }
       ]
@@ -220,7 +277,7 @@ function renderMonthlyChart(trends) {
         }
       },
       plugins: {
-        legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans' } } }
+        legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', size: 12 } } }
       }
     }
   });
@@ -242,7 +299,7 @@ function renderLeadTimeChart(leadData) {
         label: 'Cancellation Rate (%)',
         data: rates,
         backgroundColor: ['#10b981', '#34d399', '#f59e0b', '#f97316', '#ef4444', '#b91c1c'],
-        borderRadius: 6
+        borderRadius: 8
       }]
     },
     options: {
@@ -277,10 +334,10 @@ function renderMarketSegmentChart(segmentData) {
         axis: 'y',
         label: 'Cancellation Rate (%)',
         data: rates,
-        backgroundColor: 'rgba(99, 102, 241, 0.7)',
+        backgroundColor: 'rgba(99, 102, 241, 0.75)',
         borderColor: '#6366f1',
-        borderWidth: 1,
-        borderRadius: 6
+        borderWidth: 1.5,
+        borderRadius: 8
       }]
     },
     options: {
@@ -316,7 +373,7 @@ function renderDepositTypeChart(depositData) {
         label: 'Cancellation Rate (%)',
         data: rates,
         backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
-        borderRadius: 8
+        borderRadius: 10
       }]
     },
     options: {
@@ -351,11 +408,13 @@ function renderSpecialRequestsChart(srData) {
         label: 'Cancellation Rate (%)',
         data: rates,
         borderColor: '#a855f7',
-        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+        backgroundColor: 'rgba(168, 85, 247, 0.18)',
         fill: true,
         borderWidth: 3,
         pointRadius: 5,
-        tension: 0.3
+        pointHoverRadius: 8,
+        pointBackgroundColor: '#a855f7',
+        tension: 0.35
       }]
     },
     options: {
@@ -393,7 +452,7 @@ async function fetchModelBenchmark() {
         tr.innerHTML = `
           <td>
             <strong>${modelName}</strong>
-            ${isBest ? '<span class="badge badge-success" style="margin-left: 6px;">Champion</span>' : ''}
+            ${isBest ? '<span class="badge badge-success" style="margin-left: 6px;"><i class="fa-solid fa-crown"></i> Champion</span>' : ''}
           </td>
           <td>${(m.accuracy * 100).toFixed(2)}%</td>
           <td>${(m.precision * 100).toFixed(2)}%</td>
@@ -435,10 +494,10 @@ function renderFeaturesChart(features) {
         axis: 'y',
         label: 'Importance Score',
         data: values,
-        backgroundColor: 'rgba(14, 165, 233, 0.7)',
+        backgroundColor: 'rgba(14, 165, 233, 0.75)',
         borderColor: '#0ea5e9',
-        borderWidth: 1,
-        borderRadius: 6
+        borderWidth: 1.5,
+        borderRadius: 8
       }]
     },
     options: {
@@ -447,7 +506,7 @@ function renderFeaturesChart(features) {
       maintainAspectRatio: false,
       scales: {
         x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
-        y: { grid: { display: false }, ticks: { color: '#f8fafc', font: { size: 11 } } }
+        y: { grid: { display: false }, ticks: { color: '#f8fafc', font: { size: 11, weight: '500' } } }
       },
       plugins: { legend: { display: false } }
     }
@@ -482,7 +541,7 @@ function initPredictionForm() {
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Evaluating...';
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Evaluating Reservation Risk...';
 
     try {
       const res = await fetch('/api/predict', {
@@ -498,6 +557,7 @@ function initPredictionForm() {
 
       const result = await res.json();
       displayPredictionResult(result);
+      showToast(`Risk Evaluated: ${result.risk_tier} (${result.cancellation_probability}%)`, result.risk_badge, "fa-wand-magic-sparkles");
 
     } catch (err) {
       alert(`Prediction Error: ${err.message}`);
@@ -508,24 +568,38 @@ function initPredictionForm() {
   });
 }
 
+// Modern SVG Circle Gauge Updater
+function updateSVGGauge(percent, color) {
+  const circle = document.getElementById('gauge-svg-fill');
+  if (!circle) return;
+
+  // Circumference for r=68 is ~427.26
+  const totalLength = 427.26;
+  const offset = totalLength - (percent / 100) * totalLength;
+
+  circle.style.strokeDashoffset = offset;
+  circle.style.stroke = color;
+  circle.style.filter = `drop-shadow(0 0 12px ${color}80)`;
+}
+
 function displayPredictionResult(result) {
   const gaugePercent = document.getElementById('gauge-percent');
-  const gaugeCircle = document.getElementById('gauge-circle');
   const riskBadge = document.getElementById('risk-badge');
   const driversList = document.getElementById('drivers-list');
   const recList = document.getElementById('rec-list');
 
   const pct = result.cancellation_probability;
-  gaugePercent.textContent = `${pct}%`;
+  animateCountUp(gaugePercent, pct, '', '%', 1, 800);
   gaugePercent.style.color = result.risk_color;
-  gaugeCircle.style.borderColor = result.risk_color;
-  gaugeCircle.style.boxShadow = `0 0 30px ${result.risk_color}40`;
+
+  updateSVGGauge(pct, result.risk_color);
 
   riskBadge.textContent = result.risk_tier.toUpperCase();
   riskBadge.className = `risk-badge-large badge-${result.risk_badge}`;
   riskBadge.style.background = `${result.risk_color}20`;
   riskBadge.style.color = result.risk_color;
   riskBadge.style.borderColor = result.risk_color;
+  riskBadge.style.boxShadow = `0 0 15px ${result.risk_color}30`;
 
   // Drivers
   driversList.innerHTML = '';
@@ -558,12 +632,13 @@ function displayPredictionResult(result) {
   }
 }
 
-// 7. BATCH CSV AUDIT (NEW FEATURE)
+// 7. BATCH CSV AUDIT
 function initBatchAudit() {
   const dropzone = document.getElementById('csv-dropzone');
   const fileInput = document.getElementById('batch-file-input');
   const btnSample = document.getElementById('btn-load-sample');
   const btnExport = document.getElementById('btn-export-enriched-csv');
+  const searchInput = document.getElementById('batch-search-input');
 
   if (!dropzone || !fileInput) return;
 
@@ -589,6 +664,13 @@ function initBatchAudit() {
       handleBatchUpload(e.target.files[0]);
     }
   });
+
+  // Live Table Search Filter
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      filterBatchTable(e.target.value);
+    });
+  }
 
   // Load sample demo batch
   if (btnSample) {
@@ -636,6 +718,8 @@ function initBatchAudit() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      showToast("Audited CSV downloaded successfully!", "success", "fa-download");
     });
   }
 }
@@ -664,6 +748,7 @@ async function handleBatchUpload(file) {
 
     const data = await res.json();
     renderBatchResults(data);
+    showToast(`Batch Audit Complete: ${data.summary.total_reservations} bookings analyzed`, "success", "fa-file-circle-check");
 
   } catch (err) {
     alert(`Batch Processing Error: ${err.message}`);
@@ -680,20 +765,32 @@ function renderBatchResults(data) {
   const s = data.summary;
   currentBatchRecords = data.records || [];
 
-  // Update Batch KPIs
-  document.getElementById('batch-kpi-total').textContent = s.total_reservations.toLocaleString();
+  // Animate Batch KPIs
+  animateCountUp(document.getElementById('batch-kpi-total'), s.total_reservations);
   document.getElementById('batch-kpi-revenue').textContent = `Pipeline: $${s.total_pipeline_revenue.toLocaleString()}`;
-  document.getElementById('batch-kpi-cancels').textContent = s.predicted_cancellations.toLocaleString();
+  animateCountUp(document.getElementById('batch-kpi-cancels'), s.predicted_cancellations);
   document.getElementById('batch-kpi-rate').textContent = `Rate: ${s.predicted_cancellation_rate}%`;
-  document.getElementById('batch-kpi-risk').textContent = `$${s.revenue_at_risk.toLocaleString()}`;
+  animateCountUp(document.getElementById('batch-kpi-risk'), s.revenue_at_risk, '$', '', 0);
   document.getElementById('batch-kpi-risk-pct').textContent = `${s.revenue_at_risk_pct}% of pipeline at risk`;
   document.getElementById('batch-kpi-buffer').textContent = `+${s.recommended_overbooking_buffer} Rooms`;
 
   // Render Table
+  renderBatchTableRows(currentBatchRecords);
+
+  resultsArea.scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderBatchTableRows(records) {
   const tbody = document.getElementById('batch-tbody');
+  const countLabel = document.getElementById('table-record-count');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
-  currentBatchRecords.slice(0, 100).forEach(r => {
+  if (countLabel) {
+    countLabel.textContent = `Displaying ${Math.min(records.length, 100)} of ${records.length} reservations`;
+  }
+
+  records.slice(0, 100).forEach(r => {
     const tr = document.createElement('tr');
     const badgeClass = r.risk_tier === 'High Risk' ? 'badge-danger' : (r.risk_tier === 'Moderate Risk' ? 'badge-warning' : 'badge-success');
     tr.innerHTML = `
@@ -709,19 +806,35 @@ function renderBatchResults(data) {
     `;
     tbody.appendChild(tr);
   });
-
-  resultsArea.scrollIntoView({ behavior: 'smooth' });
 }
 
-// 8. OVERBOOKING OPTIMIZATION SIMULATOR (NEW FEATURE)
+function filterBatchTable(query) {
+  if (!query || query.trim() === '') {
+    renderBatchTableRows(currentBatchRecords);
+    return;
+  }
+  const q = query.toLowerCase();
+  const filtered = currentBatchRecords.filter(r => 
+    r.hotel.toLowerCase().includes(q) ||
+    r.arrival_date_month.toLowerCase().includes(q) ||
+    r.risk_tier.toLowerCase().includes(q) ||
+    String(r.lead_time).includes(q) ||
+    String(r.adr).includes(q)
+  );
+  renderBatchTableRows(filtered);
+}
+
+// 8. OVERBOOKING OPTIMIZATION SIMULATOR
 function initOverbookingSimulator() {
   const btnRun = document.getElementById('btn-run-simulation');
   if (btnRun) {
-    btnRun.addEventListener('click', runOverbookingSimulation);
+    btnRun.addEventListener('click', () => {
+      runOverbookingSimulation(true);
+    });
   }
 }
 
-async function runOverbookingSimulation() {
+async function runOverbookingSimulation(showFeedback = false) {
   const cap = parseInt(document.getElementById('sim-capacity')?.value || 250);
   const adr = parseFloat(document.getElementById('sim-adr')?.value || 110);
   const cancelRate = parseFloat(document.getElementById('sim-cancel-rate')?.value || 35);
@@ -750,8 +863,11 @@ async function runOverbookingSimulation() {
     document.getElementById('opt-occ').textContent = `${data.expected_occupancy_pct}%`;
     document.getElementById('opt-gain').textContent = `+$${data.incremental_revenue_gain.toLocaleString()}`;
 
-    // Render chart
     renderSimulationChart(data.curve);
+
+    if (showFeedback) {
+      showToast(`Optimal Buffer: +${data.optimal_overbooking_rate_pct}% (+${data.incremental_revenue_gain.toLocaleString()})`, "success", "fa-chart-line");
+    }
 
   } catch (err) {
     console.warn("Overbooking simulator notice:", err.message);
@@ -777,11 +893,13 @@ function renderSimulationChart(curve) {
           label: 'Net Expected Revenue ($)',
           data: netRevenue,
           borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.12)',
           fill: true,
-          borderWidth: 3,
+          borderWidth: 3.5,
           pointRadius: 5,
-          tension: 0.25
+          pointHoverRadius: 8,
+          pointBackgroundColor: '#10b981',
+          tension: 0.3
         },
         {
           label: 'Gross Room Revenue ($)',
@@ -816,7 +934,7 @@ function renderSimulationChart(curve) {
         }
       },
       plugins: {
-        legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans' } } }
+        legend: { labels: { color: '#f8fafc', font: { family: 'Plus Jakarta Sans', size: 12 } } }
       }
     }
   });
