@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotel Bookings Intelligence & ML Cancellation Predictor</title>
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-hotel"></i>
+        </div>
+        <div>
+          <h1 class="brand-title">GrandHorizon Analytics</h1>
+          <p class="brand-subtitle">Hotel Booking Demand Intelligence & ML Prediction Engine</p>
+        </div>
+      </div>
+      <div class="nav-status">
+        <span class="status-indicator live"></span>
+        <span class="status-text">Model & Data Active</span>
+        <span class="badge badge-primary">119k Records</span>
+      </div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-overview">
+        <i class="fa-solid fa-chart-pie"></i> Executive Overview
+      </button>
+      <button class="tab-btn" data-tab="tab-eda">
+        <i class="fa-solid fa-chart-line"></i> Market & Seasonality EDA
+      </button>
+      <button class="tab-btn" data-tab="tab-ml">
+        <i class="fa-solid fa-brain"></i> ML Model Benchmark
+      </button>
+      <button class="tab-btn highlight" data-tab="tab-predict">
+        <i class="fa-solid fa-bolt"></i> Live Risk Predictor
+      </button>
+      <button class="tab-btn" data-tab="tab-gallery">
+        <i class="fa-solid fa-images"></i> Publication Figures
+      </button>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <section id="tab-overview" class="tab-pane active">
+      <!-- Executive KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Reservations</span>
+            <div class="kpi-icon blue"><i class="fa-solid fa-calendar-check"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-total">119,390</div>
+          <div class="kpi-subtext"><span class="badge badge-info">Dataset Horizon</span> 2015 – 2017</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Cancellation Rate</span>
+            <div class="kpi-icon red"><i class="fa-solid fa-ban"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-cancel-rate">37.04%</div>
+          <div class="kpi-subtext text-danger"><i class="fa-solid fa-triangle-exclamation"></i> 44,224 Canceled Bookings</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Average Daily Rate (ADR)</span>
+            <div class="kpi-icon green"><i class="fa-solid fa-dollar-sign"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-adr">$101.83</div>
+          <div class="kpi-subtext text-success"><i class="fa-solid fa-arrow-trend-up"></i> Peak summer rate ~$125/night</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Average Lead Time</span>
+            <div class="kpi-icon purple"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          </div>
+          <div class="kpi-value" id="kpi-lead-time">104.0 Days</div>
+          <div class="kpi-subtext text-warning"><i class="fa-solid fa-hourglass-half"></i> Long lead times drive cancellation</div>
+        </div>
+      </div>
+
+      <!-- Hotel Breakdown Comparison -->
+      <div class="grid-2-col">
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-building"></i> Hotel Type Performance Comparison</h3>
+          </div>
+          <div class="hotel-compare-grid">
+            <div class="hotel-pill city-hotel">
+              <div class="hotel-icon"><i class="fa-solid fa-city"></i></div>
+              <div class="hotel-info">
+                <h4>City Hotel</h4>
+                <div class="stat-row"><span>Total Bookings:</span> <strong id="city-total">79,330</strong></div>
+                <div class="stat-row"><span>Cancellation Rate:</span> <strong class="text-danger" id="city-rate">41.7%</strong></div>
+                <div class="stat-row"><span>Average ADR:</span> <strong id="city-adr">$105.30</strong></div>
+                <div class="stat-row"><span>Average Lead Time:</span> <strong id="city-lead">109.7 days</strong></div>
+              </div>
+            </div>
+
+            <div class="hotel-pill resort-hotel">
+              <div class="hotel-icon"><i class="fa-solid fa-umbrella-beach"></i></div>
+              <div class="hotel-info">
+                <h4>Resort Hotel</h4>
+                <div class="stat-row"><span>Total Bookings:</span> <strong id="resort-total">40,060</strong></div>
+                <div class="stat-row"><span>Cancellation Rate:</span> <strong class="text-success" id="resort-rate">27.8%</strong></div>
+                <div class="stat-row"><span>Average ADR:</span> <strong id="resort-adr">$94.95</strong></div>
+                <div class="stat-row"><span>Average Lead Time:</span> <strong id="resort-lead">92.7 days</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-lightbulb"></i> Strategic Hospitality Takeaways</h3>
+          </div>
+          <ul class="insights-list">
+            <li>
+              <div class="bullet-dot blue"></div>
+              <div>
+                <strong>City Hotels suffer ~14% higher cancellation rates</strong> than Resort properties due to transient business travelers and flexible online bookings.
+              </div>
+            </li>
+            <li>
+              <div class="bullet-dot amber"></div>
+              <div>
+                <strong>Lead Time is the strongest cancellation predictor:</strong> Reservations made over 180 days in advance have cancellation rates exceeding 55%.
+              </div>
+            </li>
+            <li>
+              <div class="bullet-dot purple"></div>
+              <div>
+                <strong>Special Requests signal guest loyalty:</strong> Customers requesting 2 or more special accommodations cancel 60% less frequently.
+              </div>
+            </li>
+            <li>
+              <div class="bullet-dot green"></div>
+              <div>
+                <strong>The "Deposit Paradox":</strong> Non-refundable deposits in this dataset were largely applied to high-risk group tour agency blocks, resulting in high recorded cancellations.
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: EXPLORATORY DATA ANALYSIS -->
+    <section id="tab-eda" class="tab-pane">
+      <div class="charts-grid">
+        <!-- Monthly Seasonality -->
+        <div class="glass-card col-span-2">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-calendar-days"></i> Monthly Booking Demand & Cancellation Seasonality</h3>
+            <span class="card-subtitle">Volume peak in August / Summer vs Winter low season</span>
+          </div>
+          <div class="chart-container" style="height: 340px;">
+            <canvas id="chart-monthly"></canvas>
+          </div>
+        </div>
+
+        <!-- Lead Time vs Cancellation -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-hourglass-start"></i> Cancellation Rate by Lead Time Horizon</h3>
+            <span class="card-subtitle">Probability spikes as booking horizon expands</span>
+          </div>
+          <div class="chart-container" style="height: 300px;">
+            <canvas id="chart-leadtime"></canvas>
+          </div>
+        </div>
+
+        <!-- Market Segment Breakdown -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-users-viewfinder"></i> Market Segment Cancellation Rates</h3>
+            <span class="card-subtitle">Online TA vs Direct vs Corporate vs Groups</span>
+          </div>
+          <div class="chart-container" style="height: 300px;">
+            <canvas id="chart-market"></canvas>
+          </div>
+        </div>
+
+        <!-- Deposit Type Paradox -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> Deposit Type Impact</h3>
+            <span class="card-subtitle">No Deposit vs Non Refund vs Refundable</span>
+          </div>
+          <div class="chart-container" style="height: 280px;">
+            <canvas id="chart-deposit"></canvas>
+          </div>
+        </div>
+
+        <!-- Special Requests Correlation -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-bell-concierge"></i> Guest Engagement & Special Requests</h3>
+            <span class="card-subtitle">More requests = lower cancellation risk</span>
+          </div>
+          <div class="chart-container" style="height: 280px;">
+            <canvas id="chart-special-requests"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MACHINE LEARNING BENCHMARK -->
+    <section id="tab-ml" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-robot"></i> Multi-Classifier Model Benchmark Results</h3>
+          <span class="card-subtitle">Trained with strict zero data-leakage safeguards (reservation status excluded)</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1 Score</th>
+                <th>ROC-AUC</th>
+                <th>Training Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="benchmark-tbody">
+              <!-- Populated via API -->
+              <tr>
+                <td colspan="8" class="text-center py-4">Loading benchmark metrics...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid-2-col mt-4">
+        <!-- Feature Importances -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-ranking-star"></i> Top Predictive Feature Importances</h3>
+            <span class="card-subtitle">Features driving cancellation risk predictions</span>
+          </div>
+          <div class="chart-container" style="height: 350px;">
+            <canvas id="chart-features"></canvas>
+          </div>
+        </div>
+
+        <!-- Confusion Matrix & Leakage Notice -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-shield-halved"></i> Data Integrity & Production Readiness</h3>
+          </div>
+          <div class="integrity-card">
+            <div class="integrity-item">
+              <i class="fa-solid fa-check-circle text-success"></i>
+              <div>
+                <strong>Zero Target Leakage Enforced</strong>
+                <p>Features <code>reservation_status</code> and <code>reservation_status_date</code> were strictly excluded during model construction to preserve genuine pre-stay predictive validity.</p>
+              </div>
+            </div>
+            <div class="integrity-item">
+              <i class="fa-solid fa-check-circle text-success"></i>
+              <div>
+                <strong>Robust Preprocessing Pipeline</strong>
+                <p>StandardScaler for skewed continuous variables (Lead Time, ADR) and OneHotEncoder for multi-class categorical features with unseen category tolerance.</p>
+              </div>
+            </div>
+            <div class="integrity-item">
+              <i class="fa-solid fa-check-circle text-success"></i>
+              <div>
+                <strong>Production Joblib Serialization</strong>
+                <p>Model pipeline fully bundled in <code>models/best_cancellation_model.joblib</code> for sub-millisecond REST API inference.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: LIVE PREDICTOR & WHAT-IF SIMULATOR -->
+    <section id="tab-predict" class="tab-pane">
+      <div class="grid-2-col">
+        <!-- Input Form -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Reservation Parameters</h3>
+            <span class="card-subtitle">Enter booking details to simulate cancellation risk</span>
+          </div>
+
+          <form id="prediction-form" class="predict-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="p-hotel"><i class="fa-solid fa-hotel"></i> Hotel Type</label>
+                <select id="p-hotel" name="hotel" class="form-control">
+                  <option value="City Hotel" selected>City Hotel</option>
+                  <option value="Resort Hotel">Resort Hotel</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="p-month"><i class="fa-solid fa-calendar"></i> Arrival Month</label>
+                <select id="p-month" name="arrival_date_month" class="form-control">
+                  <option value="January">January</option>
+                  <option value="February">February</option>
+                  <option value="March">March</option>
+                  <option value="April">April</option>
+                  <option value="May">May</option>
+                  <option value="June">June</option>
+                  <option value="July" selected>July</option>
+                  <option value="August">August</option>
+                  <option value="September">September</option>
+                  <option value="October">October</option>
+                  <option value="November">November</option>
+                  <option value="December">December</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="flex-between">
+                <label for="p-lead-time"><i class="fa-solid fa-stopwatch"></i> Lead Time (Days in Advance)</label>
+                <span id="val-lead-time" class="slider-badge">60 days</span>
+              </div>
+              <input type="range" id="p-lead-time" name="lead_time" min="0" max="400" value="60" class="form-range">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="p-weekend-nights"><i class="fa-solid fa-moon"></i> Weekend Nights</label>
+                <input type="number" id="p-weekend-nights" name="stays_in_weekend_nights" value="1" min="0" max="10" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="p-week-nights"><i class="fa-solid fa-sun"></i> Week Nights</label>
+                <input type="number" id="p-week-nights" name="stays_in_week_nights" value="2" min="0" max="20" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="p-adults"><i class="fa-solid fa-user"></i> Adults</label>
+                <input type="number" id="p-adults" name="adults" value="2" min="1" max="10" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="p-children"><i class="fa-solid fa-child"></i> Children</label>
+                <input type="number" id="p-children" name="children" value="0" min="0" max="10" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="p-market"><i class="fa-solid fa-bullseye"></i> Market Segment</label>
+                <select id="p-market" name="market_segment" class="form-control">
+                  <option value="Online TA" selected>Online TA</option>
+                  <option value="Offline TA/TO">Offline TA/TO</option>
+                  <option value="Direct">Direct</option>
+                  <option value="Corporate">Corporate</option>
+                  <option value="Groups">Groups</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="p-deposit"><i class="fa-solid fa-credit-card"></i> Deposit Type</label>
+                <select id="p-deposit" name="deposit_type" class="form-control">
+                  <option value="No Deposit" selected>No Deposit</option>
+                  <option value="Non Refund">Non Refund</option>
+                  <option value="Refundable">Refundable</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="p-adr"><i class="fa-solid fa-tag"></i> Average Daily Rate ($)</label>
+                <input type="number" id="p-adr" name="adr" value="110" min="0" max="1000" step="5" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="p-special"><i class="fa-solid fa-bell-concierge"></i> Special Requests</label>
+                <select id="p-special" name="total_of_special_requests" class="form-control">
+                  <option value="0" selected>0 Requests</option>
+                  <option value="1">1 Request</option>
+                  <option value="2">2 Requests</option>
+                  <option value="3">3+ Requests</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="p-prev-cancel"><i class="fa-solid fa-history"></i> Previous Cancellations</label>
+                <input type="number" id="p-prev-cancel" name="previous_cancellations" value="0" min="0" max="15" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="p-repeat"><i class="fa-solid fa-rotate-right"></i> Repeated Guest?</label>
+                <select id="p-repeat" name="is_repeated_guest" class="form-control">
+                  <option value="0" selected>No (First Time)</option>
+                  <option value="1">Yes (Repeat Guest)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Cancellation Risk
+            </button>
+          </form>
+        </div>
+
+        <!-- Prediction Result Output -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-gauge-high"></i> Risk Diagnostic & Revenue Intelligence</h3>
+            <span class="card-subtitle">Real-time ML Model Evaluation</span>
+          </div>
+
+          <div class="prediction-output-box" id="pred-box">
+            <!-- Gauge & Risk Score -->
+            <div class="gauge-wrapper">
+              <div class="gauge-circle" id="gauge-circle">
+                <span class="gauge-value" id="gauge-percent">--%</span>
+                <span class="gauge-label">Cancellation Probability</span>
+              </div>
+              <div class="risk-badge-large" id="risk-badge">Awaiting Simulation</div>
+            </div>
+
+            <!-- Risk Drivers Breakdown -->
+            <div class="result-section">
+              <h4 class="result-heading"><i class="fa-solid fa-chart-column"></i> Primary Risk Drivers</h4>
+              <ul class="drivers-list" id="drivers-list">
+                <li>Configure parameters and click "Predict Cancellation Risk" to inspect factors.</li>
+              </ul>
+            </div>
+
+            <!-- Actionable Recommendations -->
+            <div class="result-section">
+              <h4 class="result-heading"><i class="fa-solid fa-shield-heart"></i> Hospitality Action Plan</h4>
+              <ul class="recommendations-list" id="rec-list">
+                <li>Automated retention actions and overbooking policies will be generated here.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: PUBLICATION FIGURES GALLERY -->
+    <section id="tab-gallery" class="tab-pane">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-image"></i> High-Resolution Publication Visualizations</h3>
+          <span class="card-subtitle">Exported directly from Python matplotlib/seaborn analytics pipeline</span>
+        </div>
+
+        <div class="gallery-grid" id="gallery-container">
+          <!-- Populated dynamically via API -->
+          <div class="gallery-card">
+            <img src="/figures/1_cancellation_by_hotel.png" alt="Cancellation by Hotel">
+            <div class="gallery-caption">1. Cancellation Proportion by Hotel Type</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/2_monthly_seasonality.png" alt="Monthly Seasonality">
+            <div class="gallery-caption">2. Monthly Booking Volume & Cancellation Dynamics</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/3_lead_time_cancellation.png" alt="Lead Time Cancellation">
+            <div class="gallery-caption">3. Cancellation Probability by Lead Time Horizon</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/4_market_segment_analysis.png" alt="Market Segment Analysis">
+            <div class="gallery-caption">4. Market Segment Cancellation Comparison</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/5_deposit_type_paradox.png" alt="Deposit Type Paradox">
+            <div class="gallery-caption">5. The Deposit Type Paradox</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/6_adr_distribution_by_hotel.png" alt="ADR Distribution">
+            <div class="gallery-caption">6. ADR Distribution & Pricing Differences</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/7_special_requests_impact.png" alt="Special Requests">
+            <div class="gallery-caption">7. Guest Engagement & Special Requests Correlation</div>
+          </div>
+          <div class="gallery-card">
+            <img src="/figures/8_top_origin_countries.png" alt="Top Origin Countries">
+            <div class="gallery-caption">8. Top 10 Origin Countries Distribution</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>GrandHorizon Hotel Data Science & Prediction Platform &bull; Built with Python, Scikit-Learn, and FastAPI</p>
+  </footer>
+
+  <!-- Dashboard JavaScript -->
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

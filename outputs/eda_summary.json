@@ -1,0 +1,269 @@
+{
+  "executive_kpis": {
+    "total_bookings": 119208,
+    "canceled_bookings": 44198,
+    "cancellation_rate": 37.08,
+    "avg_adr": 101.93,
+    "avg_lead_time": 104.1,
+    "repeat_guest_pct": 3.15,
+    "avg_stay_nights": 3.4
+  },
+  "hotel_breakdown": {
+    "City Hotel": {
+      "total": 79162,
+      "canceled": 33078,
+      "cancellation_rate": 41.79,
+      "avg_adr": 105.44,
+      "avg_lead_time": 109.9
+    },
+    "Resort Hotel": {
+      "total": 40046,
+      "canceled": 11120,
+      "cancellation_rate": 27.77,
+      "avg_adr": 94.99,
+      "avg_lead_time": 92.7
+    }
+  },
+  "monthly_trends": [
+    {
+      "arrival_date_month": "January",
+      "total_bookings": 5921,
+      "cancellations": 1806,
+      "cancellation_rate": 30.5,
+      "avg_adr": 70.45
+    },
+    {
+      "arrival_date_month": "February",
+      "total_bookings": 8052,
+      "cancellations": 2693,
+      "cancellation_rate": 33.45,
+      "avg_adr": 73.72
+    },
+    {
+      "arrival_date_month": "March",
+      "total_bookings": 9766,
+      "cancellations": 3147,
+      "cancellation_rate": 32.22,
+      "avg_adr": 80.35
+    },
+    {
+      "arrival_date_month": "April",
+      "total_bookings": 11078,
+      "cancellations": 4518,
+      "cancellation_rate": 40.78,
+      "avg_adr": 100.47
+    },
+    {
+      "arrival_date_month": "May",
+      "total_bookings": 11780,
+      "cancellations": 4677,
+      "cancellation_rate": 39.7,
+      "avg_adr": 108.77
+    },
+    {
+      "arrival_date_month": "June",
+      "total_bookings": 10929,
+      "cancellations": 4534,
+      "cancellation_rate": 41.49,
+      "avg_adr": 116.76
+    },
+    {
+      "arrival_date_month": "July",
+      "total_bookings": 12644,
+      "cancellations": 4737,
+      "cancellation_rate": 37.46,
+      "avg_adr": 126.94
+    },
+    {
+      "arrival_date_month": "August",
+      "total_bookings": 13861,
+      "cancellations": 5237,
+      "cancellation_rate": 37.78,
+      "avg_adr": 140.26
+    },
+    {
+      "arrival_date_month": "September",
+      "total_bookings": 10500,
+      "cancellations": 4115,
+      "cancellation_rate": 39.19,
+      "avg_adr": 105.13
+    },
+    {
+      "arrival_date_month": "October",
+      "total_bookings": 11147,
+      "cancellations": 4246,
+      "cancellation_rate": 38.09,
+      "avg_adr": 88.01
+    },
+    {
+      "arrival_date_month": "November",
+      "total_bookings": 6771,
+      "cancellations": 2120,
+      "cancellation_rate": 31.31,
+      "avg_adr": 73.97
+    },
+    {
+      "arrival_date_month": "December",
+      "total_bookings": 6759,
+      "cancellations": 2368,
+      "cancellation_rate": 35.03,
+      "avg_adr": 81.32
+    }
+  ],
+  "lead_time_breakdown": {
+    "0-7 days": {
+      "total": 19635,
+      "canceled": 1885,
+      "rate": 9.6
+    },
+    "8-30 days": {
+      "total": 18945,
+      "canceled": 5283,
+      "rate": 27.89
+    },
+    "1-3 months": {
+      "total": 29528,
+      "canceled": 11140,
+      "rate": 37.73
+    },
+    "3-6 months": {
+      "total": 26420,
+      "canceled": 11819,
+      "rate": 44.74
+    },
+    "6-12 months": {
+      "total": 21533,
+      "canceled": 11942,
+      "rate": 55.46
+    },
+    "1+ year": {
+      "total": 3147,
+      "canceled": 2129,
+      "rate": 67.65
+    }
+  },
+  "market_segments": {
+    "Online TA": {
+      "total": 56408,
+      "rate": 36.76,
+      "avg_adr": 117.32
+    },
+    "Offline TA/TO": {
+      "total": 24181,
+      "rate": 34.33,
+      "avg_adr": 87.26
+    },
+    "Groups": {
+      "total": 19790,
+      "rate": 61.11,
+      "avg_adr": 79.56
+    },
+    "Direct": {
+      "total": 12582,
+      "rate": 15.37,
+      "avg_adr": 115.63
+    },
+    "Corporate": {
+      "total": 5282,
+      "rate": 18.76,
+      "avg_adr": 69.53
+    },
+    "Complementary": {
+      "total": 728,
+      "rate": 12.23,
+      "avg_adr": 2.95
+    },
+    "Aviation": {
+      "total": 235,
+      "rate": 22.13,
+      "avg_adr": 100.99
+    },
+    "Undefined": {
+      "total": 2,
+      "rate": 100.0,
+      "avg_adr": 15.0
+    }
+  },
+  "deposit_types": {
+    "No Deposit": {
+      "total": 104460,
+      "rate": 28.4
+    },
+    "Non Refund": {
+      "total": 14586,
+      "rate": 99.36
+    },
+    "Refundable": {
+      "total": 162,
+      "rate": 22.22
+    }
+  },
+  "top_countries": {
+    "PRT": {
+      "total": 48482,
+      "rate": 56.73
+    },
+    "GBR": {
+      "total": 12119,
+      "rate": 20.23
+    },
+    "FRA": {
+      "total": 10401,
+      "rate": 18.58
+    },
+    "ESP": {
+      "total": 8560,
+      "rate": 25.43
+    },
+    "DEU": {
+      "total": 7285,
+      "rate": 16.72
+    },
+    "ITA": {
+      "total": 3761,
+      "rate": 35.44
+    },
+    "IRL": {
+      "total": 3374,
+      "rate": 24.66
+    },
+    "BEL": {
+      "total": 2342,
+      "rate": 20.24
+    },
+    "BRA": {
+      "total": 2222,
+      "rate": 37.35
+    },
+    "NLD": {
+      "total": 2103,
+      "rate": 18.4
+    }
+  },
+  "special_requests": {
+    "0": {
+      "total": 70199,
+      "rate": 47.77
+    },
+    "1": {
+      "total": 33183,
+      "rate": 22.05
+    },
+    "2": {
+      "total": 12952,
+      "rate": 22.13
+    },
+    "3": {
+      "total": 2494,
+      "rate": 17.84
+    },
+    "4": {
+      "total": 340,
+      "rate": 10.59
+    },
+    "5": {
+      "total": 40,
+      "rate": 5.0
+    }
+  }
+}

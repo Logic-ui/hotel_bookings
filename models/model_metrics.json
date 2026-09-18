@@ -1,0 +1,265 @@
+{
+  "best_model": "Random Forest",
+  "trained_at": "2026-09-19 01:21:29",
+  "dataset_total_samples": 119208,
+  "train_samples": 95366,
+  "test_samples": 23842,
+  "numerical_features": [
+    "lead_time",
+    "arrival_date_week_number",
+    "arrival_date_day_of_month",
+    "stays_in_weekend_nights",
+    "stays_in_week_nights",
+    "adults",
+    "children",
+    "babies",
+    "is_repeated_guest",
+    "previous_cancellations",
+    "previous_bookings_not_canceled",
+    "booking_changes",
+    "days_in_waiting_list",
+    "adr",
+    "required_car_parking_spaces",
+    "total_of_special_requests",
+    "total_stay_nights",
+    "total_guests",
+    "is_family",
+    "room_type_mismatch",
+    "has_special_requests",
+    "has_agent",
+    "has_company",
+    "net_cancellations"
+  ],
+  "categorical_features": [
+    "hotel",
+    "arrival_date_month",
+    "meal",
+    "market_segment",
+    "distribution_channel",
+    "reserved_room_type",
+    "deposit_type",
+    "customer_type"
+  ],
+  "models_benchmark": {
+    "Logistic Regression": {
+      "model_name": "Logistic Regression",
+      "accuracy": 0.8108,
+      "precision": 0.8162,
+      "recall": 0.6322,
+      "f1_score": 0.7125,
+      "roc_auc": 0.8695,
+      "confusion_matrix": [
+        [
+          13743,
+          1259
+        ],
+        [
+          3251,
+          5589
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.8086971872425562,
+          "recall": 0.9160778562858286,
+          "f1-score": 0.8590448806100762,
+          "support": 15002.0
+        },
+        "1": {
+          "precision": 0.8161507009345794,
+          "recall": 0.6322398190045249,
+          "f1-score": 0.7125191228964813,
+          "support": 8840.0
+        },
+        "accuracy": 0.8108380169448872,
+        "macro avg": {
+          "precision": 0.8124239440885679,
+          "recall": 0.7741588376451767,
+          "f1-score": 0.7857820017532788,
+          "support": 23842.0
+        },
+        "weighted avg": {
+          "precision": 0.8114607582952147,
+          "recall": 0.8108380169448872,
+          "f1-score": 0.8047169006508371,
+          "support": 23842.0
+        }
+      },
+      "train_time_seconds": 3.03
+    },
+    "Random Forest": {
+      "model_name": "Random Forest",
+      "accuracy": 0.8339,
+      "precision": 0.869,
+      "recall": 0.6499,
+      "f1_score": 0.7436,
+      "roc_auc": 0.9157,
+      "confusion_matrix": [
+        [
+          14136,
+          866
+        ],
+        [
+          3095,
+          5745
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.8203818698856712,
+          "recall": 0.9422743634182109,
+          "f1-score": 0.8771135172028667,
+          "support": 15002.0
+        },
+        "1": {
+          "precision": 0.869006201784904,
+          "recall": 0.6498868778280543,
+          "f1-score": 0.7436411882726037,
+          "support": 8840.0
+        },
+        "accuracy": 0.833864608673769,
+        "macro avg": {
+          "precision": 0.8446940358352876,
+          "recall": 0.7960806206231326,
+          "f1-score": 0.8103773527377351,
+          "support": 23842.0
+        },
+        "weighted avg": {
+          "precision": 0.8384105207534346,
+          "recall": 0.833864608673769,
+          "f1-score": 0.8276254126921913,
+          "support": 23842.0
+        }
+      },
+      "train_time_seconds": 7.66
+    },
+    "Gradient Boosting (Hist)": {
+      "model_name": "Gradient Boosting (Hist)",
+      "accuracy": 0.841,
+      "precision": 0.848,
+      "recall": 0.6959,
+      "f1_score": 0.7645,
+      "roc_auc": 0.9143,
+      "confusion_matrix": [
+        [
+          13899,
+          1103
+        ],
+        [
+          2688,
+          6152
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.8379453789111955,
+          "recall": 0.9264764698040261,
+          "f1-score": 0.8799898698914179,
+          "support": 15002.0
+        },
+        "1": {
+          "precision": 0.8479669193659545,
+          "recall": 0.6959276018099547,
+          "f1-score": 0.7644610127368748,
+          "support": 8840.0
+        },
+        "accuracy": 0.8409948829796158,
+        "macro avg": {
+          "precision": 0.842956149138575,
+          "recall": 0.8112020358069905,
+          "f1-score": 0.8222254413141463,
+          "support": 23842.0
+        },
+        "weighted avg": {
+          "precision": 0.8416611081964932,
+          "recall": 0.8409948829796158,
+          "f1-score": 0.8371547429202678,
+          "support": 23842.0
+        }
+      },
+      "train_time_seconds": 7.75
+    }
+  },
+  "top_feature_importances": [
+    {
+      "feature": "deposit_type_Non Refund",
+      "importance": 0.1449
+    },
+    {
+      "feature": "deposit_type_No Deposit",
+      "importance": 0.129
+    },
+    {
+      "feature": "lead_time",
+      "importance": 0.0954
+    },
+    {
+      "feature": "net_cancellations",
+      "importance": 0.0531
+    },
+    {
+      "feature": "room_type_mismatch",
+      "importance": 0.0511
+    },
+    {
+      "feature": "has_special_requests",
+      "importance": 0.0458
+    },
+    {
+      "feature": "total_of_special_requests",
+      "importance": 0.0443
+    },
+    {
+      "feature": "previous_cancellations",
+      "importance": 0.043
+    },
+    {
+      "feature": "market_segment_Online TA",
+      "importance": 0.0328
+    },
+    {
+      "feature": "adr",
+      "importance": 0.0324
+    },
+    {
+      "feature": "required_car_parking_spaces",
+      "importance": 0.031
+    },
+    {
+      "feature": "customer_type_Transient",
+      "importance": 0.0253
+    },
+    {
+      "feature": "booking_changes",
+      "importance": 0.024
+    },
+    {
+      "feature": "market_segment_Groups",
+      "importance": 0.0219
+    },
+    {
+      "feature": "customer_type_Transient-Party",
+      "importance": 0.0202
+    },
+    {
+      "feature": "market_segment_Offline TA/TO",
+      "importance": 0.0174
+    },
+    {
+      "feature": "arrival_date_week_number",
+      "importance": 0.0163
+    },
+    {
+      "feature": "total_stay_nights",
+      "importance": 0.0153
+    },
+    {
+      "feature": "arrival_date_day_of_month",
+      "importance": 0.0151
+    },
+    {
+      "feature": "stays_in_week_nights",
+      "importance": 0.0128
+    }
+  ]
+}
