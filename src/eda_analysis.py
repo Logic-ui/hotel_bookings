@@ -1,6 +1,7 @@
 """
 Exploratory Data Analysis (EDA) & Visualization Generator for Hotel Bookings.
 Calculates statistical summaries and outputs high-resolution charts.
+Supports dynamic filtering by Hotel Type, Year, and Market Segment.
 """
 
 import os
@@ -8,13 +9,12 @@ import json
 import pandas as pd
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend for headless figure generation
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from src.data_pipeline import load_raw_data, clean_data, engineer_features
 
-# Color palette
 PALETTE = {
     'primary': '#3b82f6',
     'secondary': '#8b5cf6',
@@ -33,19 +33,27 @@ MONTH_ORDER = [
     'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
+# In-memory dataframe cache for fast API slicing
+_CACHED_DF = None
 
-def run_full_eda(data_path: str = "hotel_bookings.csv", output_dir: str = "outputs"):
-    """
-    Executes full EDA pipeline, generates figures, and saves summary JSON.
-    """
-    os.makedirs(os.path.join(output_dir, "figures"), exist_ok=True)
-    
-    print("Loading raw dataset for EDA...")
-    df_raw = load_raw_data(data_path)
-    df = clean_data(df_raw)
-    df = engineer_features(df)
-    
-    # 1. Executive KPIs
+
+def get_cached_df(data_path: str = "hotel_bookings.csv") -> pd.DataFrame:
+    global _CACHED_DF
+    if _CACHED_DF is None:
+        if not os.path.exists(data_path):
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            data_path = os.path.join(base_dir, "hotel_bookings.csv")
+        raw = load_raw_data(data_path)
+        cleaned = clean_data(raw)
+        _CACHED_DF = engineer_features(cleaned)
+    return _CACHED_DF
+
+
+def compute_summary_dict(df: pd.DataFrame) -> dict:
+    """Computes executive KPIs, monthly seasonality, lead times, and segments for any dataframe slice."""
+    if len(df) == 0:
+        return {'executive_kpis': {'total_bookings': 0, 'cancellation_rate': 0, 'avg_adr': 0, 'avg_lead_time': 0}}
+
     total_bookings = len(df)
     canceled_bookings = int(df['is_canceled'].sum())
     cancellation_rate = float(df['is_canceled'].mean() * 100)
@@ -53,8 +61,7 @@ def run_full_eda(data_path: str = "hotel_bookings.csv", output_dir: str = "outpu
     avg_lead_time = float(df['lead_time'].mean())
     repeat_guest_pct = float(df['is_repeated_guest'].mean() * 100)
     avg_stay_nights = float(df['total_stay_nights'].mean())
-    
-    # 2. Hotel Breakdown
+
     hotel_stats = df.groupby('hotel').agg(
         total=('is_canceled', 'count'),
         canceled=('is_canceled', 'sum'),
@@ -62,52 +69,46 @@ def run_full_eda(data_path: str = "hotel_bookings.csv", output_dir: str = "outpu
         avg_adr=('adr', lambda x: round(float(x.mean()), 2)),
         avg_lead_time=('lead_time', lambda x: round(float(x.mean()), 1))
     ).to_dict(orient='index')
-    
-    # 3. Monthly Trends
+
     monthly_df = df.groupby('arrival_date_month').agg(
         total_bookings=('is_canceled', 'count'),
         cancellations=('is_canceled', 'sum'),
         cancellation_rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2)),
         avg_adr=('adr', lambda x: round(float(x.mean()), 2))
-    ).reindex(MONTH_ORDER).reset_index()
-    
-    # 4. Lead Time Buckets
+    ).reindex(MONTH_ORDER).fillna(0).reset_index()
+
     bins = [0, 7, 30, 90, 180, 365, 800]
     labels = ['0-7 days', '8-30 days', '1-3 months', '3-6 months', '6-12 months', '1+ year']
-    df['lead_time_bucket'] = pd.cut(df['lead_time'], bins=bins, labels=labels, include_lowest=True)
-    lead_time_stats = df.groupby('lead_time_bucket', observed=False).agg(
+    df_temp = df.copy()
+    df_temp['lead_time_bucket'] = pd.cut(df_temp['lead_time'], bins=bins, labels=labels, include_lowest=True)
+    lead_time_stats = df_temp.groupby('lead_time_bucket', observed=False).agg(
         total=('is_canceled', 'count'),
         canceled=('is_canceled', 'sum'),
         rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2) if len(x) > 0 else 0)
     ).to_dict(orient='index')
-    
-    # 5. Market Segment & Distribution Channel
+
     market_stats = df.groupby('market_segment').agg(
         total=('is_canceled', 'count'),
         rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2)),
         avg_adr=('adr', lambda x: round(float(x.mean()), 2))
     ).sort_values(by='total', ascending=False).to_dict(orient='index')
-    
-    # 6. Deposit Type Impact
+
     deposit_stats = df.groupby('deposit_type').agg(
         total=('is_canceled', 'count'),
         rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2))
     ).to_dict(orient='index')
-    
-    # 7. Top 10 Countries
+
     top_countries = df.groupby('country').agg(
         total=('is_canceled', 'count'),
         rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2))
     ).sort_values(by='total', ascending=False).head(10).to_dict(orient='index')
 
-    # 8. Special Requests Impact
     special_req_stats = df.groupby('total_of_special_requests').agg(
         total=('is_canceled', 'count'),
         rate=('is_canceled', lambda x: round(float(x.mean() * 100), 2))
     ).head(6).to_dict(orient='index')
 
-    # Compile JSON summary
-    summary_data = {
+    return {
         'executive_kpis': {
             'total_bookings': total_bookings,
             'canceled_bookings': canceled_bookings,
@@ -125,13 +126,33 @@ def run_full_eda(data_path: str = "hotel_bookings.csv", output_dir: str = "outpu
         'top_countries': top_countries,
         'special_requests': {str(k): v for k, v in special_req_stats.items()}
     }
-    
+
+
+def get_filtered_summary(hotel: str = None, year: int = None, market_segment: str = None) -> dict:
+    """Returns dynamic summary metrics filtered by hotel, year, and/or market segment."""
+    df = get_cached_df()
+    if hotel and hotel != "All":
+        df = df[df['hotel'] == hotel]
+    if year and year != "All" and str(year).isdigit():
+        df = df[df['arrival_date_year'] == int(year)]
+    if market_segment and market_segment != "All":
+        df = df[df['market_segment'] == market_segment]
+    return compute_summary_dict(df)
+
+
+def run_full_eda(data_path: str = "hotel_bookings.csv", output_dir: str = "outputs"):
+    os.makedirs(os.path.join(output_dir, "figures"), exist_ok=True)
+    df_raw = load_raw_data(data_path)
+    df = clean_data(df_raw)
+    df = engineer_features(df)
+
+    summary_data = compute_summary_dict(df)
     json_path = os.path.join(output_dir, "eda_summary.json")
     with open(json_path, 'w') as f:
         json.dump(summary_data, f, indent=2)
     print(f"Saved summary JSON to {json_path}")
 
-    # Generate Publication-Quality Figures
+    monthly_df = pd.DataFrame(summary_data['monthly_trends'])
     _generate_figures(df, monthly_df, output_dir)
     print("All EDA figures generated successfully!")
     return summary_data
@@ -271,9 +292,3 @@ def _generate_figures(df: pd.DataFrame, monthly_df: pd.DataFrame, output_dir: st
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, "8_top_origin_countries.png"), dpi=300)
     plt.close()
-
-
-if __name__ == "__main__":
-    csv_file = os.path.join(os.path.dirname(__file__), "..", "hotel_bookings.csv")
-    out_dir = os.path.join(os.path.dirname(__file__), "..", "outputs")
-    run_full_eda(csv_file, out_dir)
