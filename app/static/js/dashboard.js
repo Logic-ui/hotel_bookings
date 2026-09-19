@@ -597,46 +597,59 @@ function displayPredictionResult(result) {
   const recList = document.getElementById('rec-list');
 
   const pct = result.cancellation_probability;
-  animateCountUp(gaugePercent, pct, '', '%', 1, 800);
-  gaugePercent.style.color = result.risk_color;
+  if (gaugePercent) {
+    animateCountUp(gaugePercent, pct, '', '%', 1, 800);
+    gaugePercent.style.color = result.risk_color;
+  }
 
   updateSVGGauge(pct, result.risk_color);
 
-  riskBadge.textContent = result.risk_tier.toUpperCase();
-  riskBadge.className = `risk-badge-large badge-${result.risk_badge}`;
-  riskBadge.style.background = `${result.risk_color}20`;
-  riskBadge.style.color = result.risk_color;
-  riskBadge.style.borderColor = result.risk_color;
-  riskBadge.style.boxShadow = `0 0 15px ${result.risk_color}30`;
+  if (riskBadge) {
+    riskBadge.textContent = result.risk_tier.toUpperCase();
+    riskBadge.className = `risk-badge-large badge-${result.risk_badge}`;
+    riskBadge.style.background = `${result.risk_color}20`;
+    riskBadge.style.color = result.risk_color;
+    riskBadge.style.borderColor = result.risk_color;
+    riskBadge.style.boxShadow = `0 0 15px ${result.risk_color}30`;
+  }
 
   // Drivers
-  driversList.innerHTML = '';
-  result.key_drivers.forEach(driver => {
-    const li = document.createElement('li');
-    li.textContent = driver;
-    driversList.appendChild(li);
-  });
+  if (driversList && result.key_drivers) {
+    driversList.innerHTML = '';
+    result.key_drivers.forEach(driver => {
+      const li = document.createElement('li');
+      li.textContent = driver;
+      driversList.appendChild(li);
+    });
+  }
 
   // Recommendations
-  recList.innerHTML = '';
-  result.recommended_actions.forEach(rec => {
-    const li = document.createElement('li');
-    li.textContent = rec;
-    recList.appendChild(li);
-  });
+  if (recList && result.recommended_actions) {
+    recList.innerHTML = '';
+    result.recommended_actions.forEach(rec => {
+      const li = document.createElement('li');
+      li.textContent = rec;
+      recList.appendChild(li);
+    });
+  }
 
   // Dynamic Pricing Guidance
   const pBox = document.getElementById('pricing-box');
   if (pBox && result.pricing_recommendation) {
     pBox.style.display = 'block';
     const pr = result.pricing_recommendation;
-    document.getElementById('price-target').textContent = `$${pr.target_adr.toFixed(2)}`;
-    document.getElementById('price-range').textContent = `$${pr.price_range.min.toFixed(2)} - $${pr.price_range.max.toFixed(2)}`;
-    document.getElementById('price-guidance').textContent = pr.strategic_guidance;
+    const priceTarget = document.getElementById('price-target');
+    if (priceTarget) priceTarget.textContent = `$${pr.target_adr.toFixed(2)}`;
+    const priceRange = document.getElementById('price-range');
+    if (priceRange) priceRange.textContent = `$${pr.price_range.min.toFixed(2)} - $${pr.price_range.max.toFixed(2)}`;
+    const priceGuidance = document.getElementById('price-guidance');
+    if (priceGuidance) priceGuidance.textContent = pr.strategic_guidance;
 
     const sBadge = document.getElementById('price-season-badge');
-    sBadge.textContent = pr.season_category;
-    sBadge.className = `badge badge-${pr.season_badge}`;
+    if (sBadge) {
+      sBadge.textContent = pr.season_category;
+      sBadge.className = `badge badge-${pr.season_badge}`;
+    }
   }
 
   // Retention Playbook (NEW in v3.0)
@@ -645,14 +658,19 @@ function displayPredictionResult(result) {
     pbBox.style.display = 'block';
     const pb = result.retention_playbook;
 
-    document.getElementById('playbook-roi-badge').textContent = `ROI: ${pb.financial_roi.roi_multiple}`;
-    document.getElementById('incentive-title').textContent = pb.incentive.title;
-    document.getElementById('incentive-desc').textContent = pb.incentive.description;
-    document.getElementById('incentive-cost').textContent = `$${pb.incentive.cost.toFixed(2)}`;
-    document.getElementById('incentive-saved').textContent = `+$${pb.financial_roi.net_preserved_revenue.toFixed(2)}`;
+    const roiBadge = document.getElementById('playbook-roi-badge');
+    if (roiBadge) roiBadge.textContent = `ROI: ${pb.financial_roi.roi_multiple}`;
+    const incTitle = document.getElementById('incentive-title');
+    if (incTitle) incTitle.textContent = pb.incentive.title;
+    const incDesc = document.getElementById('incentive-desc');
+    if (incDesc) incDesc.textContent = pb.incentive.description;
+    const incCost = document.getElementById('incentive-cost');
+    if (incCost) incCost.textContent = `$${pb.incentive.cost.toFixed(2)}`;
+    const incSaved = document.getElementById('incentive-saved');
+    if (incSaved) incSaved.textContent = `+$${pb.financial_roi.net_preserved_revenue.toFixed(2)}`;
 
     const tList = document.getElementById('playbook-timeline');
-    if (tList) {
+    if (tList && pb.timeline) {
       tList.innerHTML = '';
       pb.timeline.forEach(step => {
         const div = document.createElement('div');
