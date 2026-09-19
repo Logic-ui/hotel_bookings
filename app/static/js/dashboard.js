@@ -15,13 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
   initOverbookingSimulator();
   initPredictionForm();
   initGeoSearch();
+  initChannelShiftSimulator();
+  initLtvCalculator();
+  initScenarioSandbox();
+  initPrintAudit();
   
   fetchSummaryData();
   fetchModelBenchmark();
   fetchGeoAnalytics();
+  fetchChannelAnalytics();
+  fetchLoyaltyCohorts();
   runOverbookingSimulation(); // Initial calculation
   
-  showToast("Welcome to GrandHorizon Analytics v3.0", "info", "fa-hotel");
+  showToast("Welcome to GrandHorizon Analytics v4.0", "info", "fa-hotel");
 });
 
 // TOAST NOTIFICATION SYSTEM
@@ -662,6 +668,36 @@ function displayPredictionResult(result) {
       });
     }
   }
+
+  // Factor Contributions Waterfall (NEW in v4.0)
+  const factorSection = document.getElementById('factor-contributions-section');
+  const factorContainer = document.getElementById('factors-waterfall');
+  if (factorSection && factorContainer) {
+    if (result.factor_contributions && result.factor_contributions.length > 0) {
+      factorSection.style.display = 'block';
+      factorContainer.innerHTML = '';
+      result.factor_contributions.forEach(f => {
+        const isUp = f.direction === 'risk_up';
+        const icon = isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+        const sign = isUp ? '+' : '-';
+        const row = document.createElement('div');
+        row.className = 'factor-row';
+        row.innerHTML = `
+          <span class="factor-name">
+            <i class="fa-solid ${icon} ${isUp ? 'text-danger' : 'text-success'}"></i>
+            ${f.factor}
+            <span class="factor-category">(${f.category})</span>
+          </span>
+          <span class="factor-badge-impact ${f.direction}">
+            ${sign}${Math.abs(f.impact)}% Risk
+          </span>
+        `;
+        factorContainer.appendChild(row);
+      });
+    } else {
+      factorSection.style.display = 'none';
+    }
+  }
 }
 
 // 7. BATCH CSV AUDIT
@@ -1041,4 +1077,426 @@ function initGeoSearch() {
     renderGeoTableRows(filtered);
   });
 }
+
+/* ==========================================================================
+   v4.0 EXTENSIONS: CHANNEL NET YIELD, LOYALTY LTV, SCENARIO SANDBOX & PRINT
+   ========================================================================== */
+
+// 1. DISTRIBUTION CHANNEL ECONOMICS & SHIFT SIMULATOR
+async function fetchChannelAnalytics() {
+  try {
+    const res = await fetch('/api/channel-analytics');
+    if (!res.ok) return;
+    const data = await res.json();
+    renderChannelAnalytics(data);
+  } catch (err) {
+    console.error("Failed to fetch channel analytics", err);
+  }
+}
+
+function renderChannelAnalytics(data) {
+  const { channels, summary } = data;
+  if (!channels || channels.length === 0) return;
+
+  const otaChannel = channels.find(c => c.market_segment === 'Online TA');
+  const directChannel = channels.find(c => c.market_segment === 'Direct');
+
+  const commissionsEl = document.getElementById('ch-kpi-commissions');
+  if (commissionsEl && summary.total_commissions_paid) {
+    animateCountUp(commissionsEl, summary.total_commissions_paid, '$', '', 0, 1000);
+  }
+
+  const netRevEl = document.getElementById('ch-kpi-net-revenue');
+  if (netRevEl && summary.total_net_realized_revenue) {
+    animateCountUp(netRevEl, summary.total_net_realized_revenue, '$', '', 0, 1000);
+  }
+
+  if (directChannel && otaChannel) {
+    const premium = (directChannel.net_adr - otaChannel.net_adr).toFixed(2);
+    const premEl = document.getElementById('ch-kpi-adr-premium');
+    if (premEl) premEl.textContent = `+$${premium}/night`;
+  }
+
+  const tbody = document.getElementById('channel-tbody');
+  if (tbody) {
+    tbody.innerHTML = '';
+    channels.forEach(ch => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${ch.market_segment}</strong></td>
+        <td>${ch.total_bookings.toLocaleString()}</td>
+        <td>${ch.volume_share_pct}%</td>
+        <td><span class="${ch.cancellation_rate > 40 ? 'text-danger font-bold' : (ch.cancellation_rate < 20 ? 'text-success font-bold' : '')}">${ch.cancellation_rate}%</span></td>
+        <td>$${ch.gross_adr.toFixed(2)}</td>
+        <td><span class="badge ${ch.commission_rate_pct === 0 ? 'badge-success' : 'badge-warning'}">${ch.commission_rate_pct}%</span></td>
+        <td>$${ch.commission_per_night.toFixed(2)}</td>
+        <td><strong class="${ch.commission_rate_pct === 0 ? 'text-success' : ''}">$${ch.net_adr.toFixed(2)}</strong></td>
+        <td><strong class="text-info">$${ch.realized_yield_per_attempt.toFixed(2)}</strong></td>
+        <td>$${Math.round(ch.total_net_revenue).toLocaleString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  renderChannelCharts(channels);
+}
+
+function renderChannelCharts(channels) {
+  const labels = channels.map(c => c.market_segment);
+  const grossAdrs = channels.map(c => c.gross_adr);
+  const netAdrs = channels.map(c => c.net_adr);
+  const yields = channels.map(c => c.realized_yield_per_attempt);
+
+  const ctxAdr = document.getElementById('chart-channel-adr');
+  if (ctxAdr) {
+    if (charts.channelAdr) charts.channelAdr.destroy();
+    charts.channelAdr = new Chart(ctxAdr, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Gross Quoted ADR ($)',
+            data: grossAdrs,
+            backgroundColor: 'rgba(56, 189, 248, 0.4)',
+            borderColor: '#38bdf8',
+            borderWidth: 1.5,
+            borderRadius: 6
+          },
+          {
+            label: 'True Net ADR After Commissions ($)',
+            data: netAdrs,
+            backgroundColor: 'rgba(16, 185, 129, 0.65)',
+            borderColor: '#10b981',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        },
+        plugins: {
+          legend: { labels: { color: '#f8fafc' } }
+        }
+      }
+    });
+  }
+
+  const ctxYield = document.getElementById('chart-channel-yield');
+  if (ctxYield) {
+    if (charts.channelYield) charts.channelYield.destroy();
+    charts.channelYield = new Chart(ctxYield, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Realized Yield / Booking Attempt ($)',
+          data: yields,
+          backgroundColor: [
+            'rgba(16, 185, 129, 0.85)',
+            'rgba(59, 130, 246, 0.75)',
+            'rgba(245, 158, 11, 0.75)',
+            'rgba(168, 85, 247, 0.75)',
+            'rgba(239, 68, 68, 0.75)'
+          ],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+}
+
+function initChannelShiftSimulator() {
+  const shiftSlider = document.getElementById('shift-slider');
+  const shiftVal = document.getElementById('shift-slider-val');
+  const costSlider = document.getElementById('shift-cost-slider');
+  const costVal = document.getElementById('shift-cost-val');
+
+  if (!shiftSlider || !costSlider) return;
+
+  const runShift = async () => {
+    const shiftPct = parseFloat(shiftSlider.value);
+    const directCost = parseFloat(costSlider.value);
+    if (shiftVal) shiftVal.textContent = `${shiftPct}% Shift`;
+    if (costVal) costVal.textContent = `$${directCost} / booking`;
+
+    try {
+      const res = await fetch('/api/simulate-channel-shift', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shift_pct: shiftPct, marketing_cost_per_direct: directCost })
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      document.getElementById('shift-net-profit').textContent = `+$${Math.round(data.net_profit_expansion).toLocaleString()}`;
+      document.getElementById('shift-bookings-count').textContent = data.bookings_shifted_to_direct.toLocaleString();
+      document.getElementById('shift-cancels-avoided').textContent = `+${data.cancellations_avoided.toLocaleString()} Bookings`;
+      document.getElementById('shift-comm-saved').textContent = `$${Math.round(data.commission_dollars_saved).toLocaleString()}`;
+      document.getElementById('shift-roi-multiple').textContent = data.direct_shift_roi;
+      document.getElementById('shift-recommendation-text').textContent = data.recommendation;
+    } catch (err) {
+      console.error("Failed to run shift simulation", err);
+    }
+  };
+
+  shiftSlider.addEventListener('input', runShift);
+  costSlider.addEventListener('input', runShift);
+  runShift();
+}
+
+// 2. GUEST LOYALTY COHORTS & LTV CALCULATOR
+async function fetchLoyaltyCohorts() {
+  try {
+    const res = await fetch('/api/loyalty-segments');
+    if (!res.ok) return;
+    const data = await res.json();
+    renderLoyaltyCohorts(data);
+  } catch (err) {
+    console.error("Failed to fetch loyalty segments", err);
+  }
+}
+
+function renderLoyaltyCohorts(data) {
+  const { cohorts } = data;
+  if (!cohorts) return;
+
+  const container = document.getElementById('loyalty-cohorts-grid');
+  if (container) {
+    container.innerHTML = '';
+    cohorts.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'cohort-card';
+      card.innerHTML = `
+        <div class="cohort-header">
+          <div class="cohort-icon-title">
+            <div class="cohort-icon" style="background: ${c.color}20; color: ${c.color};">
+              <i class="fa-solid ${c.icon}"></i>
+            </div>
+            <span class="cohort-title">${c.cohort_name}</span>
+          </div>
+          <span class="badge badge-${c.badge}">${c.portfolio_share_pct}% Share</span>
+        </div>
+        <p class="cohort-desc">${c.description}</p>
+        <div class="cohort-stats-grid">
+          <div class="cohort-stat-item">
+            <span class="cohort-stat-label">Bookings</span>
+            <span class="cohort-stat-val">${c.total_bookings.toLocaleString()}</span>
+          </div>
+          <div class="cohort-stat-item">
+            <span class="cohort-stat-label">Cancel Rate</span>
+            <span class="cohort-stat-val ${c.cancellation_rate_pct > 40 ? 'text-danger' : 'text-success'}">${c.cancellation_rate_pct}%</span>
+          </div>
+          <div class="cohort-stat-item">
+            <span class="cohort-stat-label">Average ADR</span>
+            <span class="cohort-stat-val">$${c.avg_adr.toFixed(2)}</span>
+          </div>
+          <div class="cohort-stat-item">
+            <span class="cohort-stat-label">Realized Rev</span>
+            <span class="cohort-stat-val text-success">$${Math.round(c.realized_revenue).toLocaleString()}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  const ctxShare = document.getElementById('chart-loyalty-share');
+  if (ctxShare) {
+    if (charts.loyaltyShare) charts.loyaltyShare.destroy();
+    charts.loyaltyShare = new Chart(ctxShare, {
+      type: 'doughnut',
+      data: {
+        labels: cohorts.map(c => c.cohort_name),
+        datasets: [{
+          data: cohorts.map(c => c.portfolio_share_pct),
+          backgroundColor: cohorts.map(c => c.color),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { color: '#f8fafc', font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  const ctxRev = document.getElementById('chart-loyalty-revenue');
+  if (ctxRev) {
+    if (charts.loyaltyRevenue) charts.loyaltyRevenue.destroy();
+    charts.loyaltyRevenue = new Chart(ctxRev, {
+      type: 'bar',
+      data: {
+        labels: cohorts.map(c => c.cohort_name.split(' ')[0]),
+        datasets: [{
+          label: 'Realized Revenue ($)',
+          data: cohorts.map(c => c.realized_revenue),
+          backgroundColor: cohorts.map(c => c.color),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+}
+
+function initLtvCalculator() {
+  const form = document.getElementById('ltv-form');
+  if (!form) return;
+
+  const runLtv = async (e) => {
+    if (e) e.preventDefault();
+    const payload = {
+      past_completed_stays: parseInt(document.getElementById('ltv-past-stays').value) || 0,
+      past_cancellations: parseInt(document.getElementById('ltv-past-cancels').value) || 0,
+      projected_annual_stays: parseFloat(document.getElementById('ltv-annual-stays').value) || 2.0,
+      average_adr: parseFloat(document.getElementById('ltv-avg-adr').value) || 120.0,
+      average_nights_per_stay: parseFloat(document.getElementById('ltv-avg-nights').value) || 2.5,
+      preferred_room_type: document.getElementById('ltv-room-type').value || 'A',
+      special_requests: 1
+    };
+
+    try {
+      const res = await fetch('/api/calculate-ltv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      animateCountUp(document.getElementById('ltv-val'), data.three_year_ltv, '$', '', 0, 800);
+      document.getElementById('ltv-annual-spend').textContent = `$${data.annual_spend_estimate.toLocaleString()}`;
+      document.getElementById('ltv-retention-rate').textContent = `${data.retention_probability_pct}%`;
+
+      const pill = document.getElementById('ltv-tier-pill');
+      pill.className = `tier-badge-large ${data.loyalty_tier.tier_badge}`;
+      document.getElementById('ltv-tier-name').textContent = data.loyalty_tier.tier_name;
+
+      document.getElementById('ltv-greeting').textContent = `"${data.concierge_protocol.greeting_script}"`;
+
+      const amList = document.getElementById('ltv-amenities');
+      amList.innerHTML = '';
+      data.concierge_protocol.vip_amenities.forEach(am => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fa-solid fa-check"></i> ${am}`;
+        amList.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Failed to calculate LTV", err);
+    }
+  };
+
+  form.addEventListener('submit', runLtv);
+  runLtv();
+}
+
+// 3. INTERACTIVE WHAT-IF POLICY SCENARIO SANDBOX
+function initScenarioSandbox() {
+  const btn = document.getElementById('btn-run-scenario');
+  const adrSlider = document.getElementById('policy-adr-adjust');
+  const adrVal = document.getElementById('val-policy-adr');
+
+  if (adrSlider && adrVal) {
+    adrSlider.addEventListener('input', () => {
+      const v = parseFloat(adrSlider.value);
+      adrVal.textContent = `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
+    });
+  }
+
+  const runSimulation = async () => {
+    const payload = {
+      deposit_rule: document.getElementById('policy-deposit').checked,
+      upgrade_rule: document.getElementById('policy-upgrade').checked,
+      direct_perk: document.getElementById('policy-direct').checked,
+      adr_adjustment_pct: parseFloat(adrSlider ? adrSlider.value : 0)
+    };
+
+    try {
+      const res = await fetch('/api/simulate-scenario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      animateCountUp(document.getElementById('sim-cancels-saved'), data.impact.cancellations_prevented, '', '', 0, 800);
+      document.getElementById('sim-cancel-rate-drop').textContent = `-${data.impact.cancellation_rate_reduction_pct.toFixed(1)}% Churn Reduction`;
+
+      animateCountUp(document.getElementById('sim-revenue-lift'), data.impact.net_revenue_impact, '+$', '', 0, 800);
+      document.getElementById('sim-revenue-growth').textContent = `+${data.impact.revenue_growth_pct.toFixed(1)}% Growth`;
+
+      document.getElementById('sim-baseline-rate').textContent = `${data.baseline.cancellation_rate_pct}%`;
+      document.getElementById('sim-scenario-rate').textContent = `${data.scenario.cancellation_rate_pct}%`;
+
+      document.getElementById('meter-baseline').style.width = `${Math.min(100, data.baseline.cancellation_rate_pct)}%`;
+      document.getElementById('meter-scenario').style.width = `${Math.min(100, data.scenario.cancellation_rate_pct)}%`;
+
+      const pList = document.getElementById('sim-policy-list');
+      if (pList) {
+        pList.innerHTML = '';
+        const entries = Object.values(data.policy_contributions);
+        if (entries.length === 0) {
+          pList.innerHTML = '<li class="text-muted p-2">No active policy interventions selected.</li>';
+        } else {
+          entries.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'policy-contrib-item';
+            li.innerHTML = `
+              <span class="policy-contrib-name">${item.policy_name}</span>
+              <span class="policy-contrib-saved">+${item.cancellations_prevented.toLocaleString()} Saved</span>
+            `;
+            pList.appendChild(li);
+          });
+        }
+      }
+
+      showToast("Policy Scenario Recalculated", "success", "fa-flask-vial");
+    } catch (err) {
+      console.error("Failed to run scenario simulation", err);
+    }
+  };
+
+  if (btn) btn.addEventListener('click', runSimulation);
+  runSimulation();
+}
+
+// 4. PRINT AUDIT BRIEFING
+function initPrintAudit() {
+  const printBtn = document.getElementById('btn-print-batch-audit');
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+}
+
 

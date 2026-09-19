@@ -1396,3 +1396,431 @@ body {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   v4.0 EXTENSIONS: CHANNEL YIELD, LOYALTY LTV, SCENARIO SANDBOX & EXPLAINABILITY
+   ========================================================================== */
+
+/* 1. COHORTS GRID & CARDS */
+.cohorts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.cohort-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  backdrop-filter: blur(16px);
+  transition: transform 0.25s, box-shadow 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.cohort-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.cohort-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.cohort-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cohort-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.cohort-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cohort-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  min-height: 38px;
+}
+
+.cohort-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+.cohort-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.cohort-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.cohort-stat-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* 2. LTV & VIP PERSONA STYLING */
+.ltv-output-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  backdrop-filter: blur(16px);
+}
+
+.ltv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 1rem;
+}
+
+.tier-badge-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tier-badge-large.platinum {
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.25), rgba(168, 85, 247, 0.1));
+  border: 1px solid #c084fc;
+  color: #e9d5ff;
+  box-shadow: 0 0 15px rgba(192, 132, 252, 0.3);
+}
+
+.tier-badge-large.gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.1));
+  border: 1px solid #f59e0b;
+  color: #fef3c7;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.tier-badge-large.silver {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.25), rgba(100, 116, 139, 0.1));
+  border: 1px solid #94a3b8;
+  color: #f1f5f9;
+}
+
+.tier-badge-large.bronze {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.25), rgba(146, 64, 14, 0.1));
+  border: 1px solid #b45309;
+  color: #fed7aa;
+}
+
+.concierge-box {
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+}
+
+.concierge-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 0.3rem;
+}
+
+.concierge-script {
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  font-style: italic;
+  margin: 0;
+}
+
+.amenities-box {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+}
+
+.amenities-box .concierge-title {
+  color: #34d399;
+}
+
+.amenities-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.amenities-list li {
+  background: rgba(16, 185, 129, 0.12);
+  color: #a7f3d0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* 3. POLICY SWITCHES & SCENARIO SANDBOX */
+.policy-switch-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.2s;
+}
+
+.policy-switch-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.policy-info strong {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.policy-info p {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.switch-container {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.switch-container input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-container .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #334155;
+  transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 24px;
+}
+
+.switch-container .slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 50%;
+}
+
+.switch-container input:checked + .slider {
+  background-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+.switch-container input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.comparison-meter-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.meter-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.meter-bar {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.meter-fill.baseline {
+  background: #ef4444;
+  opacity: 0.4;
+}
+
+.meter-fill.scenario {
+  background: linear-gradient(90deg, #10b981, #059669);
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.policy-contrib-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.policy-contrib-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.8rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.policy-contrib-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.policy-contrib-saved {
+  font-weight: 700;
+  color: #34d399;
+}
+
+/* 4. EXPLAINABLE ML FACTOR WATERFALL */
+.factors-waterfall {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.factor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  transition: background 0.2s;
+}
+
+.factor-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.factor-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.factor-category {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-left: 0.3rem;
+}
+
+.factor-badge-impact {
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.factor-badge-impact.risk_up {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.factor-badge-impact.risk_down {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* PRINT AUDIT BRIEFING */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .navbar, .filter-toolbar, .ambient-glow, .btn, .tab-btn {
+    display: none !important;
+  }
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .glass-card {
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+  }
+}

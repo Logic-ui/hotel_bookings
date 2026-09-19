@@ -51,6 +51,7 @@ class BookingCancellationPredictor:
             risk_badge = "danger"
 
         drivers, recommendations = self._generate_insights(booking_input, proba)
+        factor_contributions = self._compute_factor_contributions(booking_input)
 
         return {
             'cancellation_probability': round(proba * 100, 1),
@@ -59,7 +60,8 @@ class BookingCancellationPredictor:
             'risk_color': risk_color,
             'risk_badge': risk_badge,
             'key_drivers': drivers,
-            'recommended_actions': recommendations
+            'recommended_actions': recommendations,
+            'factor_contributions': factor_contributions
         }
 
     def predict_batch(self, df: pd.DataFrame) -> Dict[str, Any]:
@@ -219,3 +221,60 @@ class BookingCancellationPredictor:
             recommendations.append("Standard automated confirmation email and standard 24h pre-arrival reminder.")
 
         return drivers, recommendations
+        
+    def _compute_factor_contributions(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Computes relative percentage impact weights for key risk factors for waterfall explainability."""
+        factors = []
+        lead_time = int(data.get('lead_time', 0))
+        deposit_type = str(data.get('deposit_type', 'No Deposit'))
+        special_requests = int(data.get('total_of_special_requests', 0))
+        previous_cancellations = int(data.get('previous_cancellations', 0))
+        is_repeated_guest = int(data.get('is_repeated_guest', 0))
+        market_segment = str(data.get('market_segment', 'Online TA'))
+        parking = int(data.get('required_car_parking_spaces', 0))
+
+        # 1. Lead Time
+        if lead_time > 150:
+            factors.append({'factor': f'Lead Time ({lead_time}d)', 'impact': 25, 'direction': 'risk_up', 'category': 'Booking Window'})
+        elif lead_time > 60:
+            factors.append({'factor': f'Lead Time ({lead_time}d)', 'impact': 14, 'direction': 'risk_up', 'category': 'Booking Window'})
+        elif lead_time <= 14:
+            factors.append({'factor': f'Short Lead Time ({lead_time}d)', 'impact': -18, 'direction': 'risk_down', 'category': 'Booking Window'})
+
+        # 2. Deposit
+        if deposit_type == 'Non Refund':
+            factors.append({'factor': 'Non-Refund Deposit Group Policy', 'impact': 28, 'direction': 'risk_up', 'category': 'Deposit Type'})
+        elif deposit_type == 'Refundable':
+            factors.append({'factor': 'Refundable Deposit Hold', 'impact': -12, 'direction': 'risk_down', 'category': 'Deposit Type'})
+
+        # 3. Special Requests
+        if special_requests >= 2:
+            factors.append({'factor': f'{special_requests} Special Requests (High Commitment)', 'impact': -16, 'direction': 'risk_down', 'category': 'Engagement'})
+        elif special_requests == 1:
+            factors.append({'factor': '1 Special Request Registered', 'impact': -8, 'direction': 'risk_down', 'category': 'Engagement'})
+        else:
+            factors.append({'factor': 'Zero Special Requests Submitted', 'impact': 10, 'direction': 'risk_up', 'category': 'Engagement'})
+
+        # 4. Loyalty
+        if is_repeated_guest == 1:
+            factors.append({'factor': 'Verified Repeat Guest', 'impact': -22, 'direction': 'risk_down', 'category': 'Loyalty'})
+
+        # 5. Prior cancellations
+        if previous_cancellations > 0:
+            impact_val = min(30, previous_cancellations * 12)
+            factors.append({'factor': f'{previous_cancellations} Historical Cancellations', 'impact': impact_val, 'direction': 'risk_up', 'category': 'History'})
+
+        # 6. Market segment
+        if market_segment == 'Direct':
+            factors.append({'factor': 'Direct Booking Channel', 'impact': -14, 'direction': 'risk_down', 'category': 'Channel'})
+        elif market_segment == 'Groups':
+            factors.append({'factor': 'Group Block Allocation', 'impact': 24, 'direction': 'risk_up', 'category': 'Channel'})
+        elif market_segment == 'Corporate':
+            factors.append({'factor': 'Corporate Contract Stay', 'impact': -10, 'direction': 'risk_down', 'category': 'Channel'})
+
+        # 7. Parking
+        if parking > 0:
+            factors.append({'factor': 'Vehicle Parking Space Reserved', 'impact': -24, 'direction': 'risk_down', 'category': 'Commitment'})
+
+        return factors
+

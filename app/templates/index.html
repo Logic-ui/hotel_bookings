@@ -42,7 +42,7 @@
         </a>
         <div class="nav-status">
           <span class="status-indicator live"></span>
-          <span class="status-text">Production v3.0</span>
+          <span class="status-text">Production v4.0</span>
           <span class="badge badge-glow">119k Records</span>
         </div>
       </div>
@@ -59,13 +59,22 @@
       <button class="tab-btn" data-tab="tab-geo">
         <i class="fa-solid fa-earth-americas"></i> Geographic Risk
       </button>
+      <button class="tab-btn highlight" data-tab="tab-channel">
+        <i class="fa-solid fa-arrows-split-up-and-left"></i> Channel Net Yield
+      </button>
+      <button class="tab-btn highlight" data-tab="tab-loyalty">
+        <i class="fa-solid fa-crown"></i> Loyalty & LTV
+      </button>
+      <button class="tab-btn highlight" data-tab="tab-sandbox">
+        <i class="fa-solid fa-flask-vial"></i> Scenario Sandbox
+      </button>
       <button class="tab-btn" data-tab="tab-ml">
         <i class="fa-solid fa-brain"></i> Model Benchmark
       </button>
-      <button class="tab-btn highlight" data-tab="tab-predict">
+      <button class="tab-btn" data-tab="tab-predict">
         <i class="fa-solid fa-bolt"></i> Live Risk & Retention
       </button>
-      <button class="tab-btn highlight" data-tab="tab-batch">
+      <button class="tab-btn" data-tab="tab-batch">
         <i class="fa-solid fa-file-csv"></i> Batch CSV Audit
       </button>
       <button class="tab-btn" data-tab="tab-simulator">
@@ -360,6 +369,359 @@
       </div>
     </section>
 
+    <!-- TAB: DISTRIBUTION CHANNEL NET YIELD & COMMISSION OPTIMIZER (NEW v4.0) -->
+    <section id="tab-channel" class="tab-pane">
+      <div class="kpi-grid">
+        <div class="kpi-card" data-tilt>
+          <div class="kpi-header">
+            <span class="kpi-label">OTA Commissions Paid</span>
+            <div class="kpi-icon red"><i class="fa-solid fa-receipt"></i></div>
+          </div>
+          <div class="kpi-value count-up text-danger" id="ch-kpi-commissions">$0</div>
+          <div class="kpi-subtext text-danger" id="ch-kpi-take-rate">18% Industry Take-Rate</div>
+        </div>
+
+        <div class="kpi-card" data-tilt>
+          <div class="kpi-header">
+            <span class="kpi-label">Direct Channel Margin</span>
+            <div class="kpi-icon green"><i class="fa-solid fa-percent"></i></div>
+          </div>
+          <div class="kpi-value text-success" id="ch-kpi-direct-margin">100% Retained</div>
+          <div class="kpi-subtext text-success"><i class="fa-solid fa-shield-halved"></i> 0% Intermediary Fee</div>
+        </div>
+
+        <div class="kpi-card" data-tilt>
+          <div class="kpi-header">
+            <span class="kpi-label">Direct Net ADR Premium</span>
+            <div class="kpi-icon blue"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          </div>
+          <div class="kpi-value text-success count-up" id="ch-kpi-adr-premium">+$24.15</div>
+          <div class="kpi-subtext" id="ch-kpi-direct-vs-ota">vs Net OTA ADR</div>
+        </div>
+
+        <div class="kpi-card" data-tilt>
+          <div class="kpi-header">
+            <span class="kpi-label">Realized Net Portfolio Revenue</span>
+            <div class="kpi-icon amber"><i class="fa-solid fa-sack-dollar"></i></div>
+          </div>
+          <div class="kpi-value count-up" id="ch-kpi-net-revenue">$0</div>
+          <div class="kpi-subtext text-warning">After All Commissions & Cancellations</div>
+        </div>
+      </div>
+
+      <!-- Channel Economics Table & Charts -->
+      <div class="grid-2-col mb-4">
+        <div class="glass-card card-interactive">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-scale-balanced"></i> Gross ADR vs True Net ADR by Channel</h3>
+            <span class="card-subtitle">Net room rate earned after deducting intermediary commissions</span>
+          </div>
+          <div class="chart-container" style="height: 320px;">
+            <canvas id="chart-channel-adr"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card card-interactive">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-chart-column"></i> Effective Realized Yield per Booking Attempt</h3>
+            <span class="card-subtitle">Accounts for both channel commission take-rate AND cancellation friction</span>
+          </div>
+          <div class="chart-container" style="height: 320px;">
+            <canvas id="chart-channel-yield"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channel Breakdown Table -->
+      <div class="glass-card mb-4 card-interactive">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-table-cells"></i> Channel Distribution Performance Matrix</h3>
+          <span class="card-subtitle">Volume, cancellation friction, commission drag, and net revenue</span>
+        </div>
+        <div class="table-responsive">
+          <table class="benchmark-table" id="channel-table">
+            <thead>
+              <tr>
+                <th>Channel Segment</th>
+                <th>Total Bookings</th>
+                <th>Share (%)</th>
+                <th>Cancellation Rate</th>
+                <th>Gross ADR</th>
+                <th>Commission Rate</th>
+                <th>Commission / Night</th>
+                <th>Net ADR</th>
+                <th>Realized Yield / Attempt</th>
+                <th>Net Revenue Realized</th>
+              </tr>
+            </thead>
+            <tbody id="channel-tbody">
+              <tr><td colspan="10" class="text-center py-4">Loading channel economics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Direct Booking Shift Simulator -->
+      <div class="glass-card card-interactive">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Direct Booking Channel Shift Simulator</h3>
+          <span class="card-subtitle">Simulate shifting high-commission OTA bookings to direct brand bookings</span>
+        </div>
+
+        <div class="grid-2-col">
+          <div>
+            <div class="form-group mb-4">
+              <div class="flex-between">
+                <label for="shift-slider"><i class="fa-solid fa-share"></i> Shift % of Online TA Volume to Direct:</label>
+                <span id="shift-slider-val" class="slider-badge">10% Shift</span>
+              </div>
+              <input type="range" id="shift-slider" min="1" max="35" step="1" value="10" class="form-range">
+            </div>
+
+            <div class="form-group">
+              <div class="flex-between">
+                <label for="shift-cost-slider"><i class="fa-solid fa-bullhorn"></i> Direct Acquisition Incentive per Booking ($):</label>
+                <span id="shift-cost-val" class="slider-badge">$15 / booking</span>
+              </div>
+              <input type="range" id="shift-cost-slider" min="0" max="40" step="1" value="15" class="form-range">
+              <p class="field-hint">e.g., Free breakfast, parking, or direct digital ad spend.</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="sim-banner" id="shift-sim-banner">
+              <div class="sim-banner-icon"><i class="fa-solid fa-coins"></i></div>
+              <div class="sim-banner-content">
+                <h4>Net Profit Expansion: <span id="shift-net-profit" class="text-success">+$0</span></h4>
+                <p>Bookings Shifted: <strong id="shift-bookings-count">0</strong> &bull; Cancellations Avoided: <strong id="shift-cancels-avoided" class="text-success">0</strong></p>
+                <div class="sim-gain text-success">
+                  <i class="fa-solid fa-piggy-bank"></i> Commissions Saved: <strong id="shift-comm-saved">$0</strong> &bull; ROI: <strong id="shift-roi-multiple">0.0x</strong>
+                </div>
+                <p class="mt-2 text-muted" id="shift-recommendation-text">Adjust sliders to see direct channel profitability.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: GUEST LOYALTY, LTV & VIP PERSONA SEGMENTATION (NEW v4.0) -->
+    <section id="tab-loyalty" class="tab-pane">
+      <div class="grid-2-col mb-4">
+        <div class="glass-card card-interactive">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-chart-pie"></i> Guest Cohort Volume & Churn Dynamics</h3>
+            <span class="card-subtitle">Distribution of reservations across 6 behavioral profiles</span>
+          </div>
+          <div class="chart-container" style="height: 300px;">
+            <canvas id="chart-loyalty-share"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card card-interactive">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-money-bill-trend-up"></i> Realized Revenue Contribution by Cohort</h3>
+            <span class="card-subtitle">Total net revenue generated by each guest persona</span>
+          </div>
+          <div class="chart-container" style="height: 300px;">
+            <canvas id="chart-loyalty-revenue"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cohorts Cards Grid -->
+      <div class="cohorts-grid mb-4" id="loyalty-cohorts-grid">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+
+      <!-- Live Guest LTV & VIP Concierge Calculator -->
+      <div class="glass-card card-interactive">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-calculator"></i> Interactive Guest Lifetime Value (LTV) & VIP Persona Evaluator</h3>
+          <span class="card-subtitle">Score any guest profile to generate 3-year LTV, Loyalty Tier, and Front-Desk greeting instructions</span>
+        </div>
+
+        <div class="grid-2-col">
+          <form id="ltv-form" class="predict-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ltv-past-stays"><i class="fa-solid fa-door-closed"></i> Past Completed Stays</label>
+                <input type="number" id="ltv-past-stays" value="2" min="0" max="50" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="ltv-past-cancels"><i class="fa-solid fa-ban"></i> Past Cancellations</label>
+                <input type="number" id="ltv-past-cancels" value="0" min="0" max="20" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ltv-annual-stays"><i class="fa-solid fa-calendar-check"></i> Projected Annual Stays</label>
+                <input type="number" id="ltv-annual-stays" value="2.5" min="0.5" max="20" step="0.5" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="ltv-avg-adr"><i class="fa-solid fa-dollar-sign"></i> Average ADR ($)</label>
+                <input type="number" id="ltv-avg-adr" value="135" min="40" max="1000" step="5" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ltv-avg-nights"><i class="fa-solid fa-moon"></i> Avg Nights / Stay</label>
+                <input type="number" id="ltv-avg-nights" value="3" min="1" max="30" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="ltv-room-type"><i class="fa-solid fa-bed"></i> Preferred Room</label>
+                <select id="ltv-room-type" class="form-control">
+                  <option value="A">Standard Room (A)</option>
+                  <option value="D" selected>Deluxe Room (D)</option>
+                  <option value="E">Junior Suite (E)</option>
+                  <option value="F">Executive Suite (F)</option>
+                  <option value="G">Presidential (G)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-shimmer">
+              <i class="fa-solid fa-crown"></i> Calculate Guest LTV & Concierge Protocol
+            </button>
+          </form>
+
+          <!-- LTV Output Box -->
+          <div class="ltv-output-container" id="ltv-result-box">
+            <div class="ltv-header">
+              <div>
+                <span class="kpi-label">3-Year Discounted LTV</span>
+                <div class="kpi-value text-success count-up" id="ltv-val">$0</div>
+              </div>
+              <div id="ltv-tier-pill" class="tier-badge-large platinum">
+                <i class="fa-solid fa-crown"></i> <span id="ltv-tier-name">Platinum VIP Elite</span>
+              </div>
+            </div>
+
+            <div class="stat-row mt-3">
+              <span>Annual Spend Projection:</span>
+              <strong id="ltv-annual-spend">$0</strong>
+            </div>
+            <div class="stat-row">
+              <span>Estimated Retention Probability:</span>
+              <strong id="ltv-retention-rate" class="text-success">0%</strong>
+            </div>
+
+            <div class="concierge-box mt-3">
+              <div class="concierge-title"><i class="fa-solid fa-bell-concierge"></i> Front-Desk Greeting Script:</div>
+              <p id="ltv-greeting" class="concierge-script">Loading personalized greeting...</p>
+            </div>
+
+            <div class="amenities-box mt-3">
+              <div class="concierge-title"><i class="fa-solid fa-gift"></i> Recommended VIP Amenities:</div>
+              <ul class="amenities-list" id="ltv-amenities">
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: INTERACTIVE WHAT-IF POLICY SCENARIO SANDBOX (NEW v4.0) -->
+    <section id="tab-sandbox" class="tab-pane">
+      <div class="glass-card mb-4 card-interactive">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-flask-vial"></i> Strategic Hospitality Policy Intervention Sandbox</h3>
+          <span class="card-subtitle">Evaluate portfolio revenue and churn impacts before implementing property policy changes</span>
+        </div>
+
+        <div class="grid-2-col">
+          <!-- Policy Controls -->
+          <div class="policy-controls-box">
+            <h4 class="mb-3 text-primary"><i class="fa-solid fa-sliders"></i> Policy Levers</h4>
+            
+            <div class="policy-switch-card">
+              <label class="switch-container">
+                <input type="checkbox" id="policy-deposit" checked>
+                <span class="slider round"></span>
+              </label>
+              <div class="policy-info">
+                <strong>Policy 1: Long Lead-Time Deposit Rule (>60 Days)</strong>
+                <p>Enforce 1-night deposit on advance bookings; curtails speculative reservations and reduces churn by ~32%.</p>
+              </div>
+            </div>
+
+            <div class="policy-switch-card">
+              <label class="switch-container">
+                <input type="checkbox" id="policy-upgrade" checked>
+                <span class="slider round"></span>
+              </label>
+              <div class="policy-info">
+                <strong>Policy 2: Discretionary Room Upgrade Allocation</strong>
+                <p>Proactively assign surplus premium inventory to high-risk Room A bookings, capturing the 36.3% upgrade retention effect.</p>
+              </div>
+            </div>
+
+            <div class="policy-switch-card">
+              <label class="switch-container">
+                <input type="checkbox" id="policy-direct" checked>
+                <span class="slider round"></span>
+              </label>
+              <div class="policy-info">
+                <strong>Policy 3: Direct Booking Value Perks</strong>
+                <p>Provide complimentary breakfast/parking perks to direct channel guests to eliminate channel re-shopping.</p>
+              </div>
+            </div>
+
+            <div class="policy-slider-group mt-3">
+              <div class="flex-between">
+                <label for="policy-adr-adjust"><strong>Policy 4: ADR Pricing Adjustment:</strong></label>
+                <span id="val-policy-adr" class="slider-badge">0.0%</span>
+              </div>
+              <input type="range" id="policy-adr-adjust" min="-15" max="15" step="1" value="0" class="form-range">
+              <p class="field-hint">Models price elasticity: lower rates boost volume retention; higher rates expand room yield.</p>
+            </div>
+
+            <button type="button" id="btn-run-scenario" class="btn btn-primary btn-block btn-shimmer mt-3">
+              <i class="fa-solid fa-play"></i> Run Policy Simulation
+            </button>
+          </div>
+
+          <!-- Scenario Results -->
+          <div class="scenario-results-box">
+            <h4 class="mb-3 text-success"><i class="fa-solid fa-chart-line"></i> Projected Simulation Impact</h4>
+
+            <div class="kpi-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1rem;">
+              <div class="kpi-card" style="padding: 1rem;">
+                <span class="kpi-label">Cancellations Prevented</span>
+                <div class="kpi-value text-success count-up" id="sim-cancels-saved">0</div>
+                <div class="kpi-subtext text-success" id="sim-cancel-rate-drop">-0.0% Churn Reduction</div>
+              </div>
+
+              <div class="kpi-card" style="padding: 1rem;">
+                <span class="kpi-label">Net Revenue Impact</span>
+                <div class="kpi-value text-success count-up" id="sim-revenue-lift">+$0</div>
+                <div class="kpi-subtext text-success" id="sim-revenue-growth">+0.0% Revenue Growth</div>
+              </div>
+            </div>
+
+            <div class="comparison-meter-card">
+              <div class="meter-header">
+                <span>Cancellation Rate Comparison</span>
+                <span><strong id="sim-baseline-rate">37.1%</strong> &rarr; <strong class="text-success" id="sim-scenario-rate">22.4%</strong></span>
+              </div>
+              <div class="meter-bar">
+                <div class="meter-fill baseline" id="meter-baseline" style="width: 37%;"></div>
+                <div class="meter-fill scenario" id="meter-scenario" style="width: 22%;"></div>
+              </div>
+            </div>
+
+            <div class="policy-breakdown-card mt-3">
+              <h5 class="mb-2"><i class="fa-solid fa-list-check"></i> Active Policy Contributions:</h5>
+              <ul class="policy-contrib-list" id="sim-policy-list">
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- TAB 4: MACHINE LEARNING BENCHMARK -->
     <section id="tab-ml" class="tab-pane">
       <div class="glass-card card-interactive">
@@ -635,6 +997,14 @@
                 <li>Configure parameters and click "Predict Cancellation Risk" to inspect factors.</li>
               </ul>
             </div>
+
+            <!-- Explainable ML Factor Contributions (NEW v4.0) -->
+            <div class="result-section" id="factor-contributions-section" style="display: none;">
+              <h4 class="result-heading"><i class="fa-solid fa-scale-balanced"></i> Feature Explainability Breakdown</h4>
+              <p class="field-hint mb-2">Shows directional impact of each parameter pushing cancellation probability up or down:</p>
+              <div class="factors-waterfall" id="factors-waterfall">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -720,6 +1090,9 @@
               </div>
               <button id="btn-export-enriched-csv" class="btn btn-primary btn-sm btn-shimmer">
                 <i class="fa-solid fa-file-export"></i> Export Enriched CSV
+              </button>
+              <button id="btn-print-batch-audit" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Print Audit Briefing
               </button>
             </div>
           </div>

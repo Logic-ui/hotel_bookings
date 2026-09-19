@@ -19,11 +19,14 @@ from src.pricing_engine import DynamicPricingEngine
 from src.eda_analysis import get_filtered_summary, get_cached_df
 from src.geo_analytics import analyze_geographic_distribution
 from src.retention_playbook import GuestRetentionPlaybookGenerator
+from src.channel_analytics import analyze_channel_economics, simulate_channel_shift
+from src.loyalty_ltv import analyze_loyalty_cohorts, calculate_guest_ltv
+from src.scenario_sandbox import simulate_policy_intervention
 
 app = FastAPI(
     title="Hotel Bookings Intelligence & Prediction Suite",
-    description="Data Analysis, Business Intelligence, Batch Risk Audit, and Revenue Optimization Engine",
-    version="3.0.0"
+    description="Data Analysis, Business Intelligence, Batch Risk Audit, Channel Yield Optimization & Scenario Sandbox",
+    version="4.0.0"
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -83,6 +86,28 @@ class OverbookingSimRequest(BaseModel):
 class RetentionPlaybookRequest(BaseModel):
     booking_data: Dict[str, Any]
     cancellation_probability: float = Field(default=50.0, ge=0.0, le=100.0)
+
+
+class ChannelShiftRequest(BaseModel):
+    shift_pct: float = Field(default=10.0, ge=1.0, le=50.0)
+    marketing_cost_per_direct: float = Field(default=15.0, ge=0.0)
+
+
+class GuestLtvRequest(BaseModel):
+    past_completed_stays: int = Field(default=2, ge=0)
+    past_cancellations: int = Field(default=0, ge=0)
+    projected_annual_stays: float = Field(default=2.0, ge=0.5)
+    average_adr: float = Field(default=120.0, ge=10.0)
+    average_nights_per_stay: float = Field(default=2.5, ge=1.0)
+    preferred_room_type: str = Field(default="A")
+    special_requests: int = Field(default=1, ge=0)
+
+
+class ScenarioSandboxRequest(BaseModel):
+    deposit_rule: bool = Field(default=True)
+    upgrade_rule: bool = Field(default=True)
+    direct_perk: bool = Field(default=True)
+    adr_adjustment_pct: float = Field(default=0.0, ge=-25.0, le=25.0)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -266,3 +291,53 @@ async def simulate_overbooking(req: OverbookingSimRequest):
         'incremental_revenue_gain': round(incremental_revenue, 2),
         'curve': curve
     }
+
+
+@app.get("/api/channel-analytics")
+async def get_channel_analytics():
+    """Returns gross ADR, commission costs, and net realized yield per distribution channel."""
+    try:
+        df = get_cached_df()
+        return analyze_channel_economics(df)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/simulate-channel-shift")
+async def post_simulate_channel_shift(req: ChannelShiftRequest):
+    """Simulates shifting a percentage of OTA booking volume to Direct channel."""
+    try:
+        df = get_cached_df()
+        return simulate_channel_shift(df, shift_pct=req.shift_pct, marketing_cost_per_direct_booking=req.marketing_cost_per_direct)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/loyalty-segments")
+async def get_loyalty_segments():
+    """Returns guest loyalty cohorts, VIP distribution, and behavioral metrics."""
+    try:
+        df = get_cached_df()
+        return analyze_loyalty_cohorts(df)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/calculate-ltv")
+async def post_calculate_ltv(req: GuestLtvRequest):
+    """Calculates 3-year projected Customer Lifetime Value (LTV), Loyalty Tier, and Concierge Protocol."""
+    try:
+        return calculate_guest_ltv(req.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/simulate-scenario")
+async def post_simulate_scenario(req: ScenarioSandboxRequest):
+    """Simulates property-level policy interventions on cancellations and portfolio revenue."""
+    try:
+        df = get_cached_df()
+        return simulate_policy_intervention(df, req.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
