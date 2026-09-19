@@ -119,6 +119,11 @@ async def serve_dashboard():
         return HTMLResponse(content=f.read())
 
 
+@app.get("/.well-known/appspecific/com.chrome.devtools.json")
+async def chrome_devtools_endpoint():
+    return {}
+
+
 @app.get("/api/executive-report", response_class=HTMLResponse)
 async def serve_executive_report():
     """Serves print-ready, publication-formatted Executive Hospitality Intelligence Briefing."""
