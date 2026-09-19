@@ -1,6 +1,6 @@
 {
   "best_model": "Random Forest",
-  "trained_at": "2026-09-19 01:32:31",
+  "trained_at": "2026-09-19 14:39:28",
   "dataset_total_samples": 119208,
   "train_samples": 95366,
   "test_samples": 23842,
@@ -85,7 +85,7 @@
           "support": 23842.0
         }
       },
-      "train_time_seconds": 2.55
+      "train_time_seconds": 2.34
     },
     "Random Forest": {
       "model_name": "Random Forest",
@@ -131,7 +131,7 @@
           "support": 23842.0
         }
       },
-      "train_time_seconds": 6.04
+      "train_time_seconds": 6.4
     },
     "Gradient Boosting (Hist)": {
       "model_name": "Gradient Boosting (Hist)",
@@ -177,7 +177,7 @@
           "support": 23842.0
         }
       },
-      "train_time_seconds": 4.08
+      "train_time_seconds": 11.49
     }
   },
   "top_feature_importances": [

@@ -265,5 +265,20 @@
       "total": 40,
       "rate": 5.0
     }
+  },
+  "room_allocation_matrix": {
+    "same_room": {
+      "total": 104413,
+      "pct_share": 87.6,
+      "cancellation_rate": 41.56,
+      "avg_adr": 104.48
+    },
+    "upgraded_room": {
+      "total": 14795,
+      "pct_share": 12.4,
+      "cancellation_rate": 5.41,
+      "avg_adr": 83.93
+    },
+    "upgrade_retention_advantage": 36.1
   }
 }
